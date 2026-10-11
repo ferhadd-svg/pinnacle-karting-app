@@ -1,24 +1,12 @@
 {
-  "name": "pinnacle-karting-app",
+  "name": "pinnacle-karting",
   "private": true,
-  "version": "0.1.0",
-  "type": "module",
+  "workspaces": ["server", "web"],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview",
-    "typecheck": "tsc -b"
-  },
-  "dependencies": {
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-router-dom": "^7.6.0"
-  },
-  "devDependencies": {
-    "@types/react": "^19.1.0",
-    "@types/react-dom": "^19.1.0",
-    "@vitejs/plugin-react": "^4.7.0",
-    "typescript": "~5.9.3",
-    "vite": "^6.4.4"
+    "dev:web": "npm run dev -w @pinnacle/web",
+    "dev:server": "npm run dev -w @pinnacle/server",
+    "build": "npm run build --workspaces",
+    "test": "npm test -w @pinnacle/server",
+    "typecheck": "npm run typecheck --workspaces"
   }
 }
