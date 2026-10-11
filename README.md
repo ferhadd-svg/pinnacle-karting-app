@@ -1,23 +1,49 @@
-# Pinnacle Karting
+# Pinnacle Karting: timing, tracking & driver app
 
-A mobile-first web app for an indoor go-kart venue: book race sessions, watch live timing, climb the leaderboards and track your race history.
+An end-to-end platform for rental karting circuits. Lap times come from the circuit's own timing hardware
+(transponders → decoder), are processed reliably on a backend, and are shown to drivers in a mobile app and to
+staff in an operator console. Designed to integrate with existing timing systems rather than replace them.
 
-## Features
+> **Design docs:** start at [`docs/README.md`](docs/README.md): architecture, hardware integration questions,
+> schema, API, lap-processing rules, app and dashboard specs, security and testing, deployment, costs (RM) and roadmap.
 
-- **Book** – pick a session (Arrive & Drive, Grand Prix, Junior Cadet, Team Endurance), track, date, time slot (with live spots left) and number of drivers. Confirmation shows a booking reference and check-in code.
-- **Live timing** – a simulated 10-lap race with a moving track map, positions, last/best laps (fastest lap in purple) and gaps to the leader. Play at 1×, 5× or 20×. Your result is saved to your profile.
-- **Leaderboards** – best laps per track for today, this month and all time, including your own best.
-- **Driver profile** – details, loyalty credits and tier, upcoming bookings (with cancel), race history with per-lap charts.
+## What's here (Phase 1 MVP)
 
-Data is stored in the browser (`localStorage`); there is no backend yet.
+| Path | What |
+|---|---|
+| `server/` | Timing API (Node 22, TypeScript, Fastify, PostgreSQL): lap engine, CSV import, session lifecycle, corrections, results, leaderboards, SSE live updates, RBAC, reference trackside gateway |
+| `server/migrations/` | SQL schema |
+| `web/` | Mobile-first driver app (PWA) + operator console (React, Vite) |
+| `docs/` | Design documentation and a sample passings CSV |
 
-## Development
+Highlights:
+
+- Raw timing events are **immutable**; laps are always **derived** and can be rebuilt; operator corrections are audited.
+- A driver is never identified by transponder alone: transponder → kart → session entry → driver/stint, with time-ranged history enforced by the database.
+- Results are clearly **Live → Provisional → Final**; only final results count for personal bests, leaderboards and records.
+
+## Quick start
+
+Requires Node 22 and PostgreSQL 16.
 
 ```bash
 npm install
-npm run dev       # start dev server
-npm run build     # typecheck + production build into dist/
-npm run preview   # serve the production build
+createdb karting && createdb karting_test
+npm run seed -w @pinnacle/server   # demo venue, staff logins, device key, a finalised demo session
+npm run dev:server                 # API → http://localhost:3000
+npm run dev:web                    # app → http://localhost:5173  (operator console: /#/admin)
 ```
 
-Built with React 19, React Router 7, TypeScript and Vite. The build uses relative paths and hash routing, so `dist/` can be hosted on any static host (GitHub Pages, Netlify, etc.).
+Live demo with a simulated decoder (use the device key printed by the seed):
+
+```bash
+npm run simulate -w @pinnacle/server -- --key tdk_… --transponders T109,T110,T111
+```
+
+Tests (wipe and rebuild `karting_test`):
+
+```bash
+npm test                           # 63 tests: lap engine, API, reliability, endurance, security
+```
+
+Containers: `JWT_SECRET=$(openssl rand -base64 32) docker compose up --build`. See [docs/10-deployment.md](docs/10-deployment.md).
