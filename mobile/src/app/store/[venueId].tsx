@@ -1,21 +1,20 @@
-import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Button, Card, Chips, ErrorBox, Loading, Muted, Screen } from '../components/ui';
-import { api, formatRM } from '../lib/api';
-import { useAuth } from '../lib/auth';
-import { typeLabel } from '../lib/format';
-import { useAsync } from '../lib/hooks';
-import { colors, mono, radius } from '../lib/theme';
+import { TrackMap } from '../../components/TrackMap';
+import { Button, Card, ErrorBox, Eyebrow, Loading, Muted, Screen } from '../../components/ui';
+import { api, formatRM } from '../../lib/api';
+import { useAuth } from '../../lib/auth';
+import { typeLabel } from '../../lib/format';
+import { useAsync } from '../../lib/hooks';
+import { colors, mono, radius } from '../../lib/theme';
 
 /** Buy session tickets. Payment runs through the server's configured provider. */
 export default function Shop() {
   const { me } = useAuth();
+  const { venueId = '' } = useLocalSearchParams<{ venueId: string }>();
   const venues = useAsync(() => api.venues(), []);
-  const [venueId, setVenueId] = useState('');
-  useEffect(() => {
-    if (!venueId && venues.data?.length) setVenueId(venues.data[0].id);
-  }, [venues.data, venueId]);
+  const venue = venues.data?.find((v) => v.id === venueId);
   const catalogue = useAsync(() => (venueId ? api.products(venueId) : Promise.resolve(null)), [venueId]);
   const [qty, setQty] = useState<Record<string, number>>({});
   const [step, setStep] = useState<'pick' | 'pay' | 'done'>('pick');
@@ -69,7 +68,7 @@ export default function Shop() {
       <Screen topInset={false}>
         <Text style={styles.h1}>You're booked in 🏁</Text>
         <Muted>Your tickets are in your wallet. Show them with your member card at check-in.</Muted>
-        <Button title="View my tickets" onPress={() => router.replace('/tickets')} />
+        <Button title="View my tickets" onPress={() => router.dismissTo('/tickets')} />
       </Screen>
     );
   }
@@ -109,8 +108,16 @@ export default function Shop() {
 
   return (
     <Screen topInset={false}>
-      {(venues.data?.length ?? 0) > 1 && (
-        <Chips options={(venues.data ?? []).map((v) => ({ value: v.id, label: v.name }))} value={venueId} onChange={(v) => { setVenueId(v); setQty({}); }} />
+      <Stack.Screen options={{ title: venue?.name ?? 'Store' }} />
+      {venue && (
+        <View style={[styles.venueHead, { borderColor: venue.accentColor }]}>
+          <View style={{ flex: 1, gap: 4 }}>
+            <Eyebrow color={venue.accentColor}>{venue.kind.toUpperCase()}</Eyebrow>
+            <Text style={styles.h1}>{venue.name}</Text>
+            <Muted>{venue.tagline}</Muted>
+          </View>
+          <TrackMap path={venue.tracks[0]?.mapPath ?? null} color={venue.accentColor} size={84} />
+        </View>
       )}
       {catalogue.error && <ErrorBox message={catalogue.error} onRetry={() => catalogue.reload()} />}
       {catalogue.loading && <Loading />}
@@ -121,6 +128,7 @@ export default function Shop() {
               <Text style={styles.name}>{p.name}</Text>
               <Muted>{p.description}</Muted>
               <Muted style={{ fontSize: 12 }}>
+                {p.sessions > 1 ? `${p.sessions} sessions · ` : ''}
                 {typeLabel[p.sessionType]}
                 {p.minAge ? ` · age ${p.minAge}+` : ''}
               </Muted>
@@ -148,7 +156,8 @@ export default function Shop() {
 }
 
 const styles = StyleSheet.create({
-  h1: { color: colors.text, fontSize: 26, fontWeight: '800' },
+  h1: { color: colors.text, fontSize: 24, fontWeight: '800' },
+  venueHead: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.surface, borderWidth: 1, borderRadius: radius.lg, padding: 16 },
   productRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   name: { color: colors.text, fontSize: 17, fontWeight: '700' },
   price: { color: colors.amber, fontSize: 16, fontWeight: '800', marginTop: 4, ...mono },

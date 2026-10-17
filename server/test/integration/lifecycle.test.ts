@@ -65,12 +65,15 @@ describe('session lifecycle: transponder → laps → provisional → final → 
     expect(pb[0]).toMatchObject({ lapTime: { display: '59.900' }, kartClass: { name: 'Rental 270cc' } });
 
     const board = await api.get(`/v1/tracks/${w.trackId}/leaderboard?period=all&classId=${w.classId}`);
+    // Walk-ins (no account) never opted in to public boards, so they appear as "Guest".
     expect(board.entries.map((e: any) => [e.position, e.driver.name, e.lapTime.display])).toEqual([
-      [1, 'Mei Ling', '59.900'],
-      [2, 'Aiman', '1:00.900'],
+      [1, 'Guest', '59.900'],
+      [2, 'Guest', '1:00.900'],
     ]);
     const records = (await api.get(`/v1/tracks/${w.trackId}/records`)).records;
-    expect(records[0]).toMatchObject({ lapTime: { display: '59.900' }, driver: { name: 'Mei Ling' } });
+    expect(records[0]).toMatchObject({ lapTime: { display: '59.900' }, driver: { name: 'Guest' } });
+    // Session results at the venue still show the names the operator entered.
+    expect((await api.get(`/v1/sessions/${sessionId}/leaderboard`)).entries[0].driver.name).toBe('Mei Ling');
 
     const history = (await api.get(`/v1/drivers/${p07.driverId}/sessions`)).sessions;
     expect(history[0]).toMatchObject({ position: 2, laps: 3, bestLap: { display: '1:00.900' }, karts: '07', session: { resultStatus: 'final' } });

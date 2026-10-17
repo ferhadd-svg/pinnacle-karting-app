@@ -19,9 +19,8 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen name="index" options={tab('Home', 'home')} />
-      <Tabs.Screen name="race" options={tab('Race', 'flag')} />
-      <Tabs.Screen name="tickets" options={tab('Tickets', 'ticket')} />
-      <Tabs.Screen name="rewards" options={tab('Rewards', 'gift')} />
+      <Tabs.Screen name="store" options={tab('Store', 'flag')} />
+      <Tabs.Screen name="tickets" options={tab('My Tickets', 'ticket')} />
       <Tabs.Screen name="me" options={tab('Me', 'user')} />
     </Tabs>
   );

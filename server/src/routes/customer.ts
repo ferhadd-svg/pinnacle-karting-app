@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { requireStaffForVenue, requireUser, type UserPrincipal } from '../auth.js';
+import { hashPassword, isStaff, requireStaffForVenue, requireUser, verifyPassword, type UserPrincipal } from '../auth.js';
 import { HttpError, many, one, withTx } from '../db.js';
 import { parse, params, uuid, type AppContext } from '../http.js';
 import {
@@ -11,19 +11,23 @@ import {
   currentWaiver,
   friendsLeaderboard,
   fulfilRedemption,
+  homeFeed,
   issueTickets,
   myFriends,
   myOrders,
   myRewards,
   myTickets,
+  profile,
   redeemReward,
   redeemTicketCode,
   removeFriend,
   signWaiver,
   transferTicket,
   useTicket,
+  waiverHistory,
   waiverStatus,
 } from '../services/customer.js';
+import { trackLeaderboard } from '../services/queries.js';
 
 /** A signed-in account with a driver profile. */
 function requireDriver(p: Parameters<typeof requireUser>[0]): UserPrincipal & { driverId: string } {
@@ -41,7 +45,7 @@ export function customerRoutes(app: FastifyInstance, ctx: AppContext) {
   app.get('/venues/:id/products', async (req) => ({
     products: await many(
       db,
-      `SELECT id, name, description, session_type AS "sessionType", price_sen AS "priceSen", min_age AS "minAge"
+      `SELECT id, name, description, session_type AS "sessionType", price_sen AS "priceSen", min_age AS "minAge", sessions
          FROM products WHERE venue_id = $1 AND active ORDER BY sort, price_sen`,
       [params(req)],
     ),
@@ -49,6 +53,27 @@ export function customerRoutes(app: FastifyInstance, ctx: AppContext) {
   }));
 
   app.get('/venues/:id/waiver', async (req) => currentWaiver(db, params(req)));
+
+  /** Home screen: promotions and every venue's monthly top 3. */
+  app.get('/home', async (req) => {
+    const p = req.principal;
+    const viewer = { driverId: p?.kind === 'user' ? p.driverId : null, staff: isStaff(p) };
+    return homeFeed(db, (trackId) => trackLeaderboard(db, trackId, 'month', null, viewer, 3));
+  });
+
+  /** Everything the Me screen shows in one call. */
+  app.get('/me/profile', async (req) => profile(db, requireDriver(req.principal)));
+
+  app.get('/me/waivers/history', async (req) => ({ signatures: await waiverHistory(db, requireDriver(req.principal).driverId) }));
+
+  app.post('/me/password', async (req) => {
+    const u = requireUser(req.principal);
+    const b = parse(z.object({ currentPassword: z.string().min(1), newPassword: z.string().min(8).max(200) }), req.body);
+    const row = await one<{ password_hash: string }>(db, 'SELECT password_hash FROM users WHERE id = $1', [u.userId]);
+    if (!(await verifyPassword(b.currentPassword, row.password_hash))) throw new HttpError(400, 'Current password is incorrect', 'wrong_password');
+    await db.query('UPDATE users SET password_hash = $2 WHERE id = $1', [u.userId, await hashPassword(b.newPassword)]);
+    return { ok: true };
+  });
 
   // ── Waivers ─────────────────────────────────────────────────────────────
   app.get('/me/waivers', async (req) => {

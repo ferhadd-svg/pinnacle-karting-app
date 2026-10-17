@@ -25,11 +25,19 @@ export default function RootLayout() {
           <Stack.Screen name="session/[id]" options={{ title: 'Session', headerBackTitle: 'Back' }} />
           <Stack.Screen name="card" options={{ presentation: 'modal', title: 'Member card' }} />
           <Stack.Screen name="sign-in" options={{ presentation: 'modal', title: 'Sign in' }} />
-          <Stack.Screen name="shop" options={{ title: 'Buy tickets', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="store/[venueId]" options={{ title: 'Store', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="venue/[id]" options={{ title: 'Leaderboard', headerBackTitle: 'Back' }} />
           <Stack.Screen name="ticket/[id]" options={{ title: 'Ticket', headerBackTitle: 'Back' }} />
-          <Stack.Screen name="receipts" options={{ title: 'Receipts', headerBackTitle: 'Back' }} />
-          <Stack.Screen name="waiver" options={{ title: 'Waiver', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="redeem" options={{ presentation: 'modal', title: 'Redeem a ticket' }} />
+          <Stack.Screen name="results" options={{ title: 'Live & results', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="rewards" options={{ title: 'Rewards', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="vouchers" options={{ title: 'My Vouchers', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="my-racing" options={{ title: 'My Racing', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="my-indemnity" options={{ title: 'My Indemnity', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="receipts" options={{ title: 'My Purchase', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="waiver" options={{ title: 'Sign Indemnity', headerBackTitle: 'Back' }} />
           <Stack.Screen name="friends" options={{ title: 'Friends', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="password" options={{ title: 'Password', headerBackTitle: 'Back' }} />
         </Stack>
       </ThemeProvider>
     </AuthProvider>

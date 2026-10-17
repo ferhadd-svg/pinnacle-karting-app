@@ -1,6 +1,6 @@
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
-export type IconName = 'home' | 'flag' | 'trophy' | 'user' | 'card' | 'chevron' | 'ticket' | 'gift' | 'qr';
+export type IconName = 'home' | 'flag' | 'trophy' | 'user' | 'card' | 'chevron' | 'ticket' | 'gift' | 'qr' | 'sign' | 'live' | 'star' | 'cart' | 'doc' | 'lock' | 'users' | 'speed';
 
 /** Small stroke icon set (24×24), drawn with react-native-svg so no icon font is needed. */
 export function Icon({ name, color, size = 24 }: { name: IconName; color: string; size?: number }) {
@@ -51,6 +51,56 @@ export function Icon({ name, color, size = 24 }: { name: IconName; color: string
           <Rect x={14} y={3} width={7} height={7} rx={1} {...p} />
           <Rect x={3} y={14} width={7} height={7} rx={1} {...p} />
           <Path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3" {...p} />
+        </>
+      )}
+      {name === 'sign' && (
+        <>
+          <Path d="M4 20h16" {...p} />
+          <Path d="M5 16c2-3 3 1 5-1s2-4 4-2" {...p} />
+          <Path d="M15 4l5 5-7 7h-5v-5z" {...p} />
+        </>
+      )}
+      {name === 'live' && (
+        <>
+          <Circle cx={12} cy={12} r={2.5} {...p} />
+          <Path d="M7.8 7.8a6 6 0 0 0 0 8.4M16.2 7.8a6 6 0 0 1 0 8.4M5 5a10 10 0 0 0 0 14M19 5a10 10 0 0 1 0 14" {...p} />
+        </>
+      )}
+      {name === 'star' && (
+        <>
+          <Circle cx={12} cy={12} r={9} {...p} />
+          <Path d="M12 7l1.5 3.2 3.5.4-2.6 2.4.7 3.4L12 14.7 8.9 16.4l.7-3.4L7 10.6l3.5-.4z" {...p} />
+        </>
+      )}
+      {name === 'cart' && (
+        <>
+          <Path d="M3 4h2l2.5 11h10L20 7H7" {...p} />
+          <Circle cx={9} cy={19} r={1.5} {...p} />
+          <Circle cx={17} cy={19} r={1.5} {...p} />
+        </>
+      )}
+      {name === 'doc' && (
+        <>
+          <Path d="M6 3h9l4 4v14H6z" {...p} />
+          <Path d="M9 10h7M9 14h7M9 18h4" {...p} />
+        </>
+      )}
+      {name === 'lock' && (
+        <>
+          <Rect x={5} y={10} width={14} height={11} rx={2} {...p} />
+          <Path d="M8 10V7a4 4 0 0 1 8 0v3" {...p} />
+        </>
+      )}
+      {name === 'users' && (
+        <>
+          <Circle cx={9} cy={8} r={3.5} {...p} />
+          <Path d="M2.5 20c1-3.5 3.5-5 6.5-5s5.5 1.5 6.5 5M16 4.5a3.5 3.5 0 0 1 0 7M18 15c2 .6 3 2.3 3.5 5" {...p} />
+        </>
+      )}
+      {name === 'speed' && (
+        <>
+          <Path d="M3.5 17a9 9 0 1 1 17 0" {...p} />
+          <Path d="M12 13l4-5" {...p} />
         </>
       )}
     </Svg>

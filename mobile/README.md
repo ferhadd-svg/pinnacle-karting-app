@@ -2,7 +2,7 @@
 
 Expo SDK 58 / React Native 0.88 app for customers, in a RUD Super App style: check in with a QR
 member card, follow live timing, see your results and progress, buy and manage tickets, sign the waiver,
-collect reward tokens and compare lap times with friends. It talks to the timing API in `../server`.
+collect points, climb mileage tiers and compare lap times with friends. It talks to the timing API in `../server`.
 
 ## Run it
 
@@ -31,11 +31,13 @@ npx expo-doctor                                       # dependency/config health
 
 ```
 src/app/                 Expo Router screens (file = route)
-  (tabs)/                Home · Race · Tickets · Rewards · Me
+  (tabs)/                Home · Store · My Tickets · Me
+  store/[venueId].tsx    Venue store: products, checkout
+  venue/[id].tsx         Venue leaderboards (records, periods, friends)
   session/[id].tsx       Session result: your race, head-to-head, standings, lap-by-lap
-  ticket/[id].tsx        Ticket pass (QR + code) and transfer
-  card.tsx               Full-screen member card for check-in
-  shop.tsx, receipts.tsx, waiver.tsx, friends.tsx, sign-in.tsx
+  ticket/[id].tsx        Ticket pass (QR + code, sessions used) and transfer
+  card.tsx               Full-screen member QR for check-in
+  results, rewards, vouchers, my-racing, my-indemnity, receipts, waiver, friends, password, redeem, sign-in
 src/components/          UI kit, LineChart (react-native-svg), LapBars, MemberCard (QR), race panels
 src/lib/                 API client (token in Keychain/Keystore via expo-secure-store), auth, hooks, theme
 ```

@@ -149,9 +149,9 @@ export function Button({
       style={({ pressed }) => [styles.button, styles[`button_${variant}`], (disabled || loading) && { opacity: 0.5 }, pressed && styles.pressed]}
     >
       {loading ? (
-        <ActivityIndicator color={colors.text} />
+        <ActivityIndicator color={variant === 'primary' ? colors.accentText : colors.text} />
       ) : (
-        <Text style={[styles.buttonText, variant === 'danger' && { color: colors.danger }]}>{title}</Text>
+        <Text style={[styles.buttonText, variant === 'primary' && { color: colors.accentText }, variant === 'danger' && { color: colors.danger }]}>{title}</Text>
       )}
     </Pressable>
   );
@@ -237,8 +237,8 @@ export const styles = StyleSheet.create({
   buttonText: { color: colors.text, fontSize: 16, fontWeight: '700' },
   chips: { gap: space.sm, paddingVertical: 2 },
   chip: { borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 8, minHeight: 36, justifyContent: 'center' },
-  chipActive: { backgroundColor: colors.text, borderColor: colors.text },
+  chipActive: { backgroundColor: colors.accent, borderColor: colors.accent },
   chipText: { color: colors.text, fontWeight: '600', fontSize: 14 },
-  chipTextActive: { color: colors.bg },
+  chipTextActive: { color: colors.accentText },
   center: { padding: space.xl, alignItems: 'center' },
 });

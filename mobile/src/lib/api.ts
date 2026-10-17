@@ -81,11 +81,45 @@ export interface LapTime {
 }
 export type ResultStatus = 'not_started' | 'live' | 'provisional' | 'final' | 'cancelled';
 export type SessionType = 'practice' | 'rental' | 'qualifying' | 'sprint' | 'endurance';
+export type VenueKind = 'indoor' | 'outdoor' | 'hybrid' | 'circuit';
 export interface Venue {
   id: string;
   name: string;
   timezone: string;
-  tracks: { id: string; name: string; layout: string; lengthM: number | null }[];
+  shortName: string;
+  kind: VenueKind;
+  accentColor: string;
+  tagline: string;
+  tracks: { id: string; name: string; layout: string; lengthM: number | null; mapPath: string | null }[];
+}
+export interface HomeFeed {
+  promotions: { id: string; title: string; subtitle: string; badge: string; color: string; venueName: string | null }[];
+  venues: {
+    venue: { id: string; name: string; shortName: string; kind: VenueKind; color: string };
+    track: { id: string; name: string; mapPath: string | null };
+    monthlyTop3: { position: number; driver: { id: string; name: string }; lapTime: LapTime }[];
+  }[];
+}
+export interface Profile {
+  driver: { id: string; name: string; memberCode: string; memberSince: string; email: string };
+  points: number;
+  mileageKm: number;
+  lapsDriven: number;
+  tier: { name: string; next: string | null; kmToNext: number | null; progress: number };
+  ticketsReady: number;
+  currentKart: { number: string; sessionId: string; sessionName: string; status: string; venueName: string } | null;
+  achievements: { venueId: string; shortName: string; color: string; days: number; bestRank: number | null }[];
+}
+export interface WaiverSignature {
+  id: string;
+  venueName: string;
+  title: string;
+  version: number;
+  signedName: string;
+  guardianName: string | null;
+  signedAt: string;
+  expiresAt: string;
+  inDate: boolean;
 }
 export interface SessionSummary {
   id: string;
@@ -178,6 +212,7 @@ export interface Product {
   sessionType: SessionType;
   priceSen: number;
   minAge: number | null;
+  sessions: number;
 }
 export interface Ticket {
   id: string;
@@ -186,6 +221,8 @@ export interface Ticket {
   issuedAt: string;
   usedAt: string | null;
   orderId: string | null;
+  sessionsTotal: number;
+  sessionsUsed: number;
   productName: string;
   sessionType: SessionType;
   description: string;
@@ -244,6 +281,10 @@ export const api = {
   login: (email: string, password: string) => request<{ token: string }>('POST', '/auth/login', { email, password }),
   register: (b: { email: string; password: string; displayName: string }) => request<{ token: string }>('POST', '/auth/register', b),
   me: () => request<Me>('GET', '/me'),
+  home: () => request<HomeFeed>('GET', '/home'),
+  profile: () => request<Profile>('GET', '/me/profile'),
+  waiverHistory: () => request<{ signatures: WaiverSignature[] }>('GET', '/me/waivers/history').then((r) => r.signatures),
+  changePassword: (currentPassword: string, newPassword: string) => request('POST', '/me/password', { currentPassword, newPassword }),
   updateMyDriver: (b: { displayName?: string; showOnLeaderboards?: boolean }) => request('PATCH', '/me/driver', b),
   venues: () => request<Venue[]>('GET', '/venues'),
   sessions: (f: { trackId?: string; limit?: number } = {}) => request<{ sessions: SessionSummary[] }>('GET', `/sessions${qs(f)}`).then((r) => r.sessions),

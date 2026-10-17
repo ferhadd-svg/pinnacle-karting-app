@@ -66,13 +66,28 @@ export function adminRoutes(app: FastifyInstance, ctx: AppContext) {
   // ── Venue setup ─────────────────────────────────────────────────────────
   app.post('/venues', async (req, reply) => {
     const u = requireUser(req.principal, 'admin');
-    const b = parse(z.object({ name: z.string().min(1), timezone: z.string().default('Asia/Kuala_Lumpur') }), req.body);
+    const b = parse(
+      z.object({
+        name: z.string().min(1),
+        timezone: z.string().default('Asia/Kuala_Lumpur'),
+        shortName: z.string().max(20).optional(),
+        kind: z.enum(['indoor', 'outdoor', 'hybrid', 'circuit']).default('indoor'),
+        accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).default('#3ee07f'),
+        tagline: z.string().max(120).default(''),
+        sort: z.number().int().default(0),
+      }),
+      req.body,
+    );
     try {
       new Intl.DateTimeFormat('en', { timeZone: b.timezone });
     } catch {
       throw new HttpError(400, 'Unknown timezone', 'invalid');
     }
-    const v = await one<{ id: string }>(db, 'INSERT INTO venues (name, timezone) VALUES ($1, $2) RETURNING id', [b.name, b.timezone]);
+    const v = await one<{ id: string }>(
+      db,
+      'INSERT INTO venues (name, timezone, short_name, kind, accent_color, tagline, sort) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
+      [b.name, b.timezone, b.shortName ?? null, b.kind, b.accentColor, b.tagline, b.sort],
+    );
     await audit(db, u, 'venue.create', 'venue', v.id, { after: b });
     reply.code(201);
     return v;
@@ -98,14 +113,22 @@ export function adminRoutes(app: FastifyInstance, ctx: AppContext) {
 
   app.post('/tracks', async (req, reply) => {
     const b = parse(
-      z.object({ venueId: uuid, name: z.string().min(1), layout: z.string().default('standard'), lengthM: z.number().int().positive().optional(), defaultRules: rulesSchema.default({}) }),
+      z.object({
+        venueId: uuid,
+        name: z.string().min(1),
+        layout: z.string().default('standard'),
+        lengthM: z.number().int().positive().optional(),
+        defaultRules: rulesSchema.default({}),
+        // SVG path in a 0..100 box, e.g. "M10 50 C10 20 ...Z"
+        mapPath: z.string().max(4000).regex(/^[MmLlHhVvCcSsQqTtAaZz0-9 .,-]+$/).optional(),
+      }),
       req.body,
     );
     const u = await staffFor(req.principal, b.venueId);
     const t = await one<{ id: string }>(
       db,
-      'INSERT INTO tracks (venue_id, name, layout, length_m, default_rules) VALUES ($1, $2, $3, $4, $5) RETURNING id',
-      [b.venueId, b.name, b.layout, b.lengthM ?? null, JSON.stringify(b.defaultRules)],
+      'INSERT INTO tracks (venue_id, name, layout, length_m, default_rules, map_path) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+      [b.venueId, b.name, b.layout, b.lengthM ?? null, JSON.stringify(b.defaultRules), b.mapPath ?? null],
     );
     await audit(db, u, 'track.create', 'track', t.id, { after: b });
     reply.code(201);

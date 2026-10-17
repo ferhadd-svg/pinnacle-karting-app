@@ -134,8 +134,10 @@ export async function confirmOrderPaid(tx: Tx, orderId: string, paymentRef: stri
   if (o.status !== 'pending') throw new HttpError(409, `Order is ${o.status}`, 'bad_state');
   await tx.query(`UPDATE orders SET status = 'paid', paid_at = now(), payment_ref = $2 WHERE id = $1`, [orderId, paymentRef]);
   await tx.query(
-    `INSERT INTO tickets (venue_id, product_id, order_id, owner_driver_id, claimed_at)
-     SELECT $2, i.product_id, $1, $3, now() FROM order_items i, generate_series(1, i.quantity) WHERE i.order_id = $1`,
+    `INSERT INTO tickets (venue_id, product_id, order_id, owner_driver_id, claimed_at, sessions_total)
+     SELECT $2, i.product_id, $1, $3, now(), p.sessions
+       FROM order_items i JOIN products p ON p.id = i.product_id, generate_series(1, i.quantity)
+      WHERE i.order_id = $1`,
     [orderId, o.venue_id, o.driver_id],
   );
   await awardTokens(tx, o.driver_id, Math.floor(o.total_sen / 1000) * TOKENS.perRm10, 'Ticket purchase', `order:${orderId}`);
@@ -156,6 +158,7 @@ export async function myOrders(q: Queryable, userId: string) {
 
 const TICKET_SELECT = `
   SELECT t.id, t.code, t.status, t.issued_at AS "issuedAt", t.used_at AS "usedAt", t.order_id AS "orderId",
+         t.sessions_total AS "sessionsTotal", t.sessions_used AS "sessionsUsed",
          p.name AS "productName", p.session_type AS "sessionType", p.description, v.id AS "venueId", v.name AS "venueName"
     FROM tickets t JOIN products p ON p.id = t.product_id JOIN venues v ON v.id = t.venue_id`;
 
@@ -165,10 +168,10 @@ export async function myTickets(q: Queryable, driverId: string) {
 
 /** Staff issue unclaimed tickets (kiosk/counter sales); the printed code is redeemed in the app. */
 export async function issueTickets(tx: Tx, actor: UserPrincipal, productId: string, quantity: number) {
-  const p = await one<{ venue_id: string }>(tx, 'SELECT venue_id FROM products WHERE id = $1', [productId]);
+  const p = await one<{ venue_id: string; sessions: number }>(tx, 'SELECT venue_id, sessions FROM products WHERE id = $1', [productId]);
   const r = await tx.query(
-    `INSERT INTO tickets (venue_id, product_id, issued_by) SELECT $1, $2, $3 FROM generate_series(1, $4) RETURNING id, code`,
-    [p.venue_id, productId, actor.userId, quantity],
+    `INSERT INTO tickets (venue_id, product_id, issued_by, sessions_total) SELECT $1, $2, $3, $5 FROM generate_series(1, $4) RETURNING id, code`,
+    [p.venue_id, productId, actor.userId, quantity, p.sessions],
   );
   await audit(tx, actor, 'tickets.issue', 'product', productId, { after: { quantity, codes: r.rows.map((x) => x.code) } });
   return { venueId: p.venue_id, tickets: r.rows as { id: string; code: string }[] };
@@ -203,14 +206,27 @@ export async function transferTicket(tx: Tx, driverId: string, ticketId: string,
 }
 
 /** Staff scan a ticket at check-in. Optionally links it to the session entry it paid for. */
+/**
+ * Staff scan a ticket at check-in. Each scan uses one session of the ticket (packs cover several);
+ * the ticket is spent when every session has been used. Optionally links the use to a session entry.
+ */
 export async function useTicket(tx: Tx, actor: UserPrincipal, code: string, participantId?: string | null) {
-  const t = await tx.query('SELECT id, code, status, venue_id FROM tickets WHERE code = $1 FOR UPDATE', [normalizeCode(code)]);
+  const t = await tx.query('SELECT id, code, status, venue_id, sessions_total, sessions_used FROM tickets WHERE code = $1 FOR UPDATE', [
+    normalizeCode(code),
+  ]);
   if (!t.rowCount) throw new HttpError(404, 'No ticket with that code', 'not_found');
   const row = t.rows[0];
   if (actor.role === 'operator' && actor.venueId !== row.venue_id) throw new HttpError(403, 'Ticket is for another venue', 'forbidden');
   if (row.status !== 'active') throw new HttpError(409, `Ticket already ${row.status}`, 'bad_state');
-  await tx.query(`UPDATE tickets SET status = 'used', used_at = now(), used_by = $2, participant_id = $3 WHERE id = $1`, [row.id, actor.userId, participantId ?? null]);
-  await audit(tx, actor, 'ticket.use', 'ticket', row.id, { after: { code: row.code, participantId } });
+  const used = row.sessions_used + 1;
+  const spent = used >= row.sessions_total;
+  await tx.query(
+    `UPDATE tickets SET sessions_used = $2, status = CASE WHEN $3 THEN 'used' ELSE status END,
+            used_at = now(), used_by = $4, participant_id = coalesce($5, participant_id) WHERE id = $1`,
+    [row.id, used, spent, actor.userId, participantId ?? null],
+  );
+  await tx.query('INSERT INTO ticket_uses (ticket_id, used_by, participant_id) VALUES ($1, $2, $3)', [row.id, actor.userId, participantId ?? null]);
+  await audit(tx, actor, 'ticket.use', 'ticket', row.id, { after: { code: row.code, participantId, session: `${used}/${row.sessions_total}` } });
   return one(tx, `${TICKET_SELECT} WHERE t.id = $1`, [row.id]);
 }
 
@@ -338,4 +354,132 @@ export async function friendsLeaderboard(q: Queryable, driverId: string, trackId
     sessionId: r.session_id,
     setAt: r.started_at,
   }));
+}
+
+// ── Profile (Me screen) ───────────────────────────────────────────────────
+/** Membership tiers by kilometres driven in final sessions. */
+export const TIERS = [
+  { name: 'Rookie', km: 0 },
+  { name: 'Amateur', km: 50 },
+  { name: 'Pro', km: 150 },
+  { name: 'Elite', km: 500 },
+  { name: 'Legend', km: 1000 },
+];
+
+export function tierFor(km: number) {
+  let i = 0;
+  while (i + 1 < TIERS.length && km >= TIERS[i + 1].km) i++;
+  const next = TIERS[i + 1] ?? null;
+  const tier = TIERS[i];
+  return {
+    name: tier.name,
+    next: next?.name ?? null,
+    kmToNext: next ? Math.round((next.km - km) * 100) / 100 : null,
+    progress: next ? Math.min(1, (km - tier.km) / (next.km - tier.km)) : 1,
+  };
+}
+
+export async function profile(q: Queryable, user: { userId: string; driverId: string }) {
+  const [base, mileage, tickets, current, achievements] = await Promise.all([
+    one<Record<string, any>>(
+      q,
+      `SELECT d.id, d.display_name, d.member_code, d.created_at, d.show_on_leaderboards, u.email
+         FROM drivers d JOIN users u ON u.id = d.user_id WHERE d.id = $1`,
+      [user.driverId],
+    ),
+    // Distance: every lap (valid or not) of a final session × the track length.
+    one<{ km: number; laps: number }>(
+      q,
+      `SELECT coalesce(sum(t.length_m), 0)::float / 1000 AS km, count(*)::int AS laps
+         FROM laps l JOIN sessions s ON s.id = l.session_id JOIN tracks t ON t.id = s.track_id
+        WHERE l.driver_id = $1 AND s.status = 'final'`,
+      [user.driverId],
+    ),
+    one<{ n: number }>(q, `SELECT count(*)::int AS n FROM tickets WHERE owner_driver_id = $1 AND status = 'active'`, [user.driverId]),
+    // The kart you're on (or assigned to) in a running or upcoming session.
+    q.query(
+      `SELECT k.number, s.id AS session_id, s.name, s.status, v.name AS venue_name
+         FROM session_participants p JOIN sessions s ON s.id = p.session_id JOIN tracks t ON t.id = s.track_id
+         JOIN venues v ON v.id = t.venue_id
+         JOIN LATERAL (SELECT kart_id FROM participant_karts pk WHERE pk.participant_id = p.id ORDER BY pk.created_at DESC LIMIT 1) pk ON true
+         JOIN karts k ON k.id = pk.kart_id
+        WHERE p.driver_id = $1 AND s.status IN ('scheduled', 'running')
+        ORDER BY (s.status = 'running') DESC, coalesce(s.started_at, s.scheduled_start, s.created_at) DESC LIMIT 1`,
+      [user.driverId],
+    ),
+    dailyTop3(q, user.driverId),
+  ]);
+  const km = Math.round(mileage.km * 100) / 100;
+  const c = current.rows[0];
+  return {
+    driver: { id: base.id, name: base.display_name, memberCode: base.member_code, memberSince: base.created_at, email: base.email },
+    points: await tokenBalance(q, user.driverId),
+    mileageKm: km,
+    lapsDriven: mileage.laps,
+    tier: tierFor(km),
+    ticketsReady: tickets.n,
+    currentKart: c ? { number: c.number, sessionId: c.session_id, sessionName: c.name, status: c.status, venueName: c.venue_name } : null,
+    achievements,
+  };
+}
+
+/**
+ * "Daily top 3" per venue: on how many days the driver's best final lap ranked in the top 3 of that
+ * day on that venue's track (venue local day, valid laps only).
+ */
+export async function dailyTop3(q: Queryable, driverId: string) {
+  return many<{ venueId: string; shortName: string; color: string; days: number; bestRank: number | null }>(
+    q,
+    `WITH best AS (
+       SELECT s.track_id, v.id AS venue_id, (s.started_at AT TIME ZONE v.timezone)::date AS day, l.driver_id, min(l.duration_us) AS best
+         FROM laps l JOIN sessions s ON s.id = l.session_id JOIN tracks t ON t.id = s.track_id JOIN venues v ON v.id = t.venue_id
+        WHERE s.status = 'final' AND l.valid AND l.driver_id IS NOT NULL
+        GROUP BY 1, 2, 3, 4
+     ), ranked AS (
+       SELECT *, rank() OVER (PARTITION BY track_id, day ORDER BY best) AS r FROM best
+     )
+     SELECT v.id AS "venueId", coalesce(v.short_name, v.name) AS "shortName", v.accent_color AS color,
+            count(*) FILTER (WHERE r.r <= 3)::int AS days, min(r.r)::int AS "bestRank"
+       FROM venues v LEFT JOIN ranked r ON r.venue_id = v.id AND r.driver_id = $1
+      GROUP BY v.id ORDER BY v.sort, v.name`,
+    [driverId],
+  );
+}
+
+/** Home feed: promotions plus each venue's monthly top 3 on its main track. */
+export async function homeFeed(q: Queryable, leaderboard: (trackId: string) => Promise<{ entries: any[] }>) {
+  const promotions = await many(
+    q,
+    `SELECT p.id, p.title, p.subtitle, p.badge, p.color, v.name AS "venueName"
+       FROM promotions p LEFT JOIN venues v ON v.id = p.venue_id
+      WHERE p.active AND p.starts_at <= now() AND (p.ends_at IS NULL OR p.ends_at > now())
+      ORDER BY p.sort, p.starts_at DESC`,
+  );
+  const tracks = await many<Record<string, any>>(
+    q,
+    `SELECT DISTINCT ON (v.id) v.id AS venue_id, v.name AS venue_name, v.sort, coalesce(v.short_name, v.name) AS short_name, v.kind,
+            v.accent_color, t.id AS track_id, t.name AS track_name, t.map_path
+       FROM venues v JOIN tracks t ON t.venue_id = v.id AND t.active
+      ORDER BY v.id, t.created_at`,
+  );
+  tracks.sort((a, b) => a.sort - b.sort || a.venue_name.localeCompare(b.venue_name));
+  const venues = await Promise.all(
+    tracks.map(async (t) => ({
+      venue: { id: t.venue_id, name: t.venue_name, shortName: t.short_name, kind: t.kind, color: t.accent_color },
+      track: { id: t.track_id, name: t.track_name, mapPath: t.map_path },
+      monthlyTop3: (await leaderboard(t.track_id)).entries.slice(0, 3),
+    })),
+  );
+  return { promotions, venues };
+}
+
+export async function waiverHistory(q: Queryable, driverId: string) {
+  return many(
+    q,
+    `SELECT s.id, v.name AS "venueName", t.title, t.version, s.signed_name AS "signedName", s.guardian_name AS "guardianName",
+            s.signed_at AS "signedAt", s.expires_at AS "expiresAt", s.expires_at > now() AS "inDate"
+       FROM waiver_signatures s JOIN waiver_templates t ON t.id = s.template_id JOIN venues v ON v.id = t.venue_id
+      WHERE s.driver_id = $1 ORDER BY s.signed_at DESC`,
+    [driverId],
+  );
 }

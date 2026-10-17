@@ -56,6 +56,9 @@ export default function TicketScreen() {
           {formatTicketCode(t.code)}
         </Text>
         <Text style={[styles.status, { color: active ? colors.you : colors.muted }]}>{active ? 'VALID · show at check-in' : `USED ${formatDate(t.usedAt)}`}</Text>
+        <Text style={styles.sessions}>
+          SESSION USED: {t.sessionsUsed} / {t.sessionsTotal}
+        </Text>
       </View>
 
       {active && (
@@ -87,6 +90,7 @@ const styles = StyleSheet.create({
   qr: { marginTop: 12, borderRadius: 10, overflow: 'hidden' },
   code: { color: colors.text, fontSize: 30, fontWeight: '800', letterSpacing: 4, marginTop: 8, fontVariant: ['tabular-nums'] },
   status: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
+  sessions: { color: colors.text, fontSize: 13, letterSpacing: 0.3 },
   title: { color: colors.text, fontSize: 16, fontWeight: '700' },
   input: { backgroundColor: colors.bg, borderColor: colors.border, borderWidth: 1, borderRadius: radius.md, color: colors.text, fontSize: 17, letterSpacing: 2, paddingHorizontal: 14, minHeight: 48 },
 });

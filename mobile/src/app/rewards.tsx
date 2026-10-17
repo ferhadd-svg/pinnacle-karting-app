@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Alert, Platform, StyleSheet, Text, View } from 'react-native';
-import { SignInPrompt } from '../../components/SignInPrompt';
-import { Button, Card, Empty, ErrorBox, Eyebrow, H1, Loading, Muted, Screen, SectionTitle } from '../../components/ui';
-import { api } from '../../lib/api';
-import { useAuth } from '../../lib/auth';
-import { formatDate, formatTicketCode } from '../../lib/format';
-import { useAsync } from '../../lib/hooks';
-import { colors, mono } from '../../lib/theme';
+import { SignInPrompt } from '../components/SignInPrompt';
+import { Button, Card, Empty, ErrorBox, Eyebrow, Loading, Muted, Screen, SectionTitle } from '../components/ui';
+import { api } from '../lib/api';
+import { useAuth } from '../lib/auth';
+import { formatDate, formatTicketCode } from '../lib/format';
+import { useAsync } from '../lib/hooks';
+import { colors, mono } from '../lib/theme';
 
 /** Confirm dialog that also works in the web preview (Alert buttons are native-only). */
 function confirm(title: string, message: string): Promise<boolean> {
@@ -27,16 +27,15 @@ export default function RewardsScreen() {
 
   if (!me?.driver) {
     return (
-      <Screen>
-        <H1>Rewards</H1>
-        <SignInPrompt title="Earn tokens every time you race" body="Members collect Pinnacle tokens for racing, podiums and ticket purchases, then swap them for drinks, merch and free sessions." />
+      <Screen topInset={false}>
+        <SignInPrompt title="Earn points every time you race" body="Members collect points for racing, podiums and ticket purchases, then swap them for drinks, merch and free sessions." />
       </Screen>
     );
   }
   const r = rewards.data;
 
   const redeem = async (id: string, name: string, cost: number) => {
-    if (!(await confirm(`Redeem ${name}?`, `${cost} tokens will be taken from your balance. Show the voucher code at the counter.`))) return;
+    if (!(await confirm(`Redeem ${name}?`, `${cost} points will be taken from your balance. Show the voucher code at the counter.`))) return;
     setBusy(id);
     setMsg(null);
     try {
@@ -51,22 +50,21 @@ export default function RewardsScreen() {
   };
 
   return (
-    <Screen onRefresh={() => rewards.reload({ pull: true })} refreshing={rewards.refreshing}>
-      <H1>Rewards</H1>
+    <Screen topInset={false} onRefresh={() => rewards.reload({ pull: true })} refreshing={rewards.refreshing}>
       {rewards.error && <ErrorBox message={rewards.error} onRetry={() => rewards.reload()} />}
       {rewards.loading && <Loading />}
       {r && (
         <>
-          <View style={styles.hero} accessible accessibilityLabel={`Token balance ${r.balance}`}>
-            <Eyebrow>Your balance</Eyebrow>
+          <View style={styles.hero} accessible accessibilityLabel={`Points balance ${r.balance}`}>
+            <Eyebrow>Your points</Eyebrow>
             <Text style={styles.balance}>{r.balance}</Text>
-            <Text style={styles.unit}>Pinnacle tokens</Text>
+            <Text style={styles.unit}>Pinnacle points</Text>
           </View>
           <Card>
             <Text style={styles.title}>How to earn</Text>
-            <Muted>• {r.rules.participation} tokens for every race once results are final</Muted>
-            <Muted>• {r.rules.podium} bonus tokens for a podium finish</Muted>
-            <Muted>• {r.rules.perRm10} token for every RM10 spent in the app</Muted>
+            <Muted>• {r.rules.participation} points for every race once results are final</Muted>
+            <Muted>• {r.rules.podium} bonus points for a podium finish</Muted>
+            <Muted>• {r.rules.perRm10} point for every RM10 spent in the app</Muted>
           </Card>
 
           {msg && <Text style={{ color: msg.ok ? colors.you : colors.danger }}>{msg.text}</Text>}
@@ -88,7 +86,7 @@ export default function RewardsScreen() {
             </>
           )}
 
-          <SectionTitle>Rewards</SectionTitle>
+          <SectionTitle>Marketplace</SectionTitle>
           {r.items.length === 0 && <Empty>No rewards available right now.</Empty>}
           {r.items.map((it) => {
             const short = r.balance < it.costTokens;
@@ -98,7 +96,7 @@ export default function RewardsScreen() {
                   <View style={{ flex: 1, gap: 2 }}>
                     <Text style={styles.title}>{it.name}</Text>
                     {it.description ? <Muted>{it.description}</Muted> : null}
-                    <Text style={styles.cost}>{it.costTokens} tokens</Text>
+                    <Text style={styles.cost}>{it.costTokens} points</Text>
                   </View>
                   <View style={{ width: 120 }}>
                     <Button
@@ -115,7 +113,7 @@ export default function RewardsScreen() {
           })}
 
           <SectionTitle>History</SectionTitle>
-          {r.ledger.length === 0 && <Empty>No tokens yet. Race to start earning.</Empty>}
+          {r.ledger.length === 0 && <Empty>No points yet. Race to start earning.</Empty>}
           {r.ledger.length > 0 && (
             <Card style={{ gap: 0, paddingVertical: 4 }}>
               {r.ledger.map((l, i) => (

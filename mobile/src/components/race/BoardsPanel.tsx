@@ -29,16 +29,17 @@ interface Row {
 }
 
 /** Track records plus monthly/weekly/daily/all-time boards and a friends-only board. */
-export function BoardsPanel({ refreshKey }: { refreshKey: number }) {
+export function BoardsPanel({ refreshKey, trackId: fixedTrack }: { refreshKey: number; trackId?: string }) {
   const { me } = useAuth();
   const venues = useAsync(() => api.venues(), []);
   const tracks = (venues.data ?? []).flatMap((v) => v.tracks.map((t) => ({ value: t.id, label: `${v.name} · ${t.name}` })));
-  const [trackId, setTrackId] = useState('');
+  const [chosenTrack, setTrackId] = useState('');
+  const trackId = fixedTrack ?? chosenTrack;
   const [period, setPeriod] = useState<Period>('month');
   const [classId, setClassId] = useState('');
   useEffect(() => {
-    if (!trackId && tracks.length) setTrackId(tracks[0].value);
-  }, [trackId, tracks]);
+    if (!fixedTrack && !chosenTrack && tracks.length) setTrackId(tracks[0].value);
+  }, [fixedTrack, chosenTrack, tracks]);
 
   const isFriends = period === 'friends';
   const board = useAsync(
@@ -73,7 +74,7 @@ export function BoardsPanel({ refreshKey }: { refreshKey: number }) {
 
   return (
     <>
-      {tracks.length > 1 && <Chips options={tracks} value={trackId} onChange={(v) => { setTrackId(v); setClassId(''); }} />}
+      {!fixedTrack && tracks.length > 1 && <Chips options={tracks} value={trackId} onChange={(v) => { setTrackId(v); setClassId(''); }} />}
       {!!records.data?.length && (
         <StatGrid>
           {records.data.map((r, i) => (
@@ -101,7 +102,7 @@ export function BoardsPanel({ refreshKey }: { refreshKey: number }) {
       {err && <ErrorBox message={err} onRetry={() => (isFriends ? friends.reload() : board.reload())} />}
       {(isFriends ? friends.loading && !!me?.driver : board.loading) && <Loading />}
       {rows && rows.length === 0 && (
-        <Empty>{isFriends ? 'No final laps yet from you or your friends here. Add friends from the Me tab.' : 'No final results for this period yet.'}</Empty>
+        <Empty>{isFriends ? 'No final laps yet from you or your friends here. Add friends from Me → Friends.' : 'No final results for this period yet.'}</Empty>
       )}
       {rows && rows.length > 0 && (
         <View style={styles.list}>

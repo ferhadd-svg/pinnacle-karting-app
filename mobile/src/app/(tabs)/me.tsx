@@ -1,208 +1,294 @@
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { StyleSheet, Switch, Text, View } from 'react-native';
-import { Icon } from '../../components/Icon';
-import { LineChart } from '../../components/LineChart';
-import { MemberCard } from '../../components/MemberCard';
-import { Button, Card, Chips, Empty, ErrorBox, H1, Loading, Muted, Screen, SectionTitle, Stat, StatGrid } from '../../components/ui';
-import { api, type DriverSession } from '../../lib/api';
+import type { ReactNode } from 'react';
+import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { Icon, type IconName } from '../../components/Icon';
+import { SignInPrompt } from '../../components/SignInPrompt';
+import { Trophy } from '../../components/Trophy';
+import { Button, ErrorBox, Loading, Muted, Screen } from '../../components/ui';
+import { api, type Profile } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
-import { formatDate, formatLap } from '../../lib/format';
+import { formatDate } from '../../lib/format';
 import { useAsync } from '../../lib/hooks';
-import { colors, mono } from '../../lib/theme';
+import { colors, mono, radius } from '../../lib/theme';
+
+function QrButton() {
+  return (
+    <Pressable onPress={() => router.push('/card')} accessibilityRole="button" accessibilityLabel="My QR code" style={styles.qrRow}>
+      <Text style={styles.qrText}>My QR</Text>
+      <View style={styles.qrCircle}>
+        <Icon name="qr" color={colors.accentText} size={26} />
+      </View>
+    </Pressable>
+  );
+}
 
 export default function MeScreen() {
   const { me, ready, signOut, refresh } = useAuth();
+  const prof = useAsync(() => (me?.driver ? api.profile() : Promise.resolve(null)), [me?.driver?.id]);
+  const waivers = useAsync(() => (me?.driver ? api.myWaivers() : Promise.resolve([])), [me?.driver?.id]);
+
   if (!ready) return <Loading />;
   if (!me) {
     return (
       <Screen>
-        <H1>Your racing</H1>
-        <Card>
-          <Text style={styles.title}>Sign in to see your laps</Text>
-          <Muted>Your sessions, lap-by-lap times, personal bests and progress, from every visit.</Muted>
-          <Button title="Sign in or create account" onPress={() => router.push('/sign-in')} />
-        </Card>
+        <SignInPrompt title="Your racing profile" body="Check in with your QR, collect points, track your mileage and keep every lap time." />
       </Screen>
     );
   }
   if (!me.driver) {
     return (
       <Screen>
-        <H1>{me.email}</H1>
+        <Text style={styles.name}>{me.email}</Text>
         <Muted>Staff account ({me.role}). Use the operator console on the web to run sessions.</Muted>
         <Button title="Sign out" variant="danger" onPress={() => void signOut()} />
       </Screen>
     );
   }
-  return <DriverProfile driver={me.driver} onSignOut={() => void signOut()} onChanged={refresh} />;
-}
 
-function DriverProfile({
-  driver,
-  onSignOut,
-  onChanged,
-}: {
-  driver: { id: string; name: string; memberCode: string; showOnLeaderboards: boolean };
-  onSignOut: () => void;
-  onChanged: () => Promise<void>;
-}) {
-  const history = useAsync(() => api.driverSessions(driver.id), [driver.id]);
-  const pbs = useAsync(() => api.personalBests(driver.id), [driver.id]);
-  const waivers = useAsync(() => api.myWaivers(), [driver.id]);
-  const waiverOk = (waivers.data ?? []).every((w) => w.valid);
-  const w0 = waivers.data?.[0];
-  const waiverText = !waivers.data ? 'Loading…' : waiverOk && w0?.expiresAt ? `Signed · valid until ${formatDate(w0.expiresAt)}` : 'Not signed: sign before your next race';
-  const all = history.data ?? [];
-
-  const finals = all.filter((s) => s.session.resultStatus === 'final');
-  const totalLaps = all.reduce((n, s) => n + s.laps, 0);
+  const p = prof.data;
+  const signed = (waivers.data ?? []).filter((w) => w.valid).length;
+  const venuesWithWaiver = (waivers.data ?? []).length;
+  const waiverOk = venuesWithWaiver > 0 && signed === venuesWithWaiver;
+  const waiverSub = waiverOk ? 'Signed' : signed ? `${signed} of ${venuesWithWaiver} venues signed` : 'Review';
 
   return (
-    <Screen onRefresh={() => Promise.all([history.reload({ pull: true }), pbs.reload(), waivers.reload()])} refreshing={history.refreshing}>
-      <H1>{driver.name}</H1>
-      <Card onPress={() => router.push('/card')} style={{ padding: 0, borderWidth: 0, backgroundColor: 'transparent' }}>
-        <MemberCard name={driver.name} code={driver.memberCode} />
-      </Card>
-      <Muted style={{ fontSize: 12 }}>Tap the card to show it full screen at check-in.</Muted>
+    <Screen onRefresh={() => Promise.all([prof.reload({ pull: true }), waivers.reload()])} refreshing={prof.refreshing}>
+      <QrButton />
+      {prof.error && <ErrorBox message={prof.error} onRetry={() => prof.reload()} />}
+      {!p && prof.loading && <Loading />}
+      {p && (
+        <>
+          <ProfileHeader p={p} />
+          <Achievements p={p} />
 
-      <StatGrid>
-        <Stat label="Sessions" value={String(all.length)} />
-        <Stat label="Laps" value={String(totalLaps)} />
-        <Stat label="Wins" value={String(finals.filter((s) => s.position === 1).length)} />
-        <Stat label="Podiums" value={String(finals.filter((s) => s.position !== null && s.position <= 3).length)} />
-      </StatGrid>
-
-      {history.error && <ErrorBox message={history.error} onRetry={() => history.reload()} />}
-      {history.loading && <Loading />}
-
-      <Progress sessions={all} />
-
-      <SectionTitle>Personal bests</SectionTitle>
-      {pbs.data && pbs.data.length === 0 && <Empty>Personal bests appear once a session you drove in is finalised.</Empty>}
-      <StatGrid>
-        {(pbs.data ?? []).map((pb) => (
-          <Stat key={`${pb.track.id}-${pb.kartClass?.id}`} label={`${pb.track.name}${pb.kartClass ? ` · ${pb.kartClass.name}` : ''}`} value={pb.lapTime.display} hint={formatDate(pb.setAt)} />
-        ))}
-      </StatGrid>
-
-      <KartStats sessions={all} />
-
-      <SectionTitle>Account</SectionTitle>
-      <LinkRow title="Waiver" subtitle={waiverText} onPress={() => router.push('/waiver')} warn={!!waivers.data && !waiverOk} />
-      <LinkRow title="Friends" subtitle="Add friends by member code and compare lap times" onPress={() => router.push('/friends')} />
-      <LinkRow title="My results" subtitle="Every session, with filters" onPress={() => router.push('/race?tab=mine')} />
-      <LinkRow title="Receipts" subtitle="Ticket purchases" onPress={() => router.push('/receipts')} />
-
-      <SectionTitle>Settings</SectionTitle>
-      <Card>
-        <View style={styles.switchRow}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.title}>Show me on public leaderboards</Text>
-            <Muted>When off, others see "Private driver". You always see your own results.</Muted>
+          <View style={styles.grid}>
+            <StatCard icon="star" value={p.points.toLocaleString()} label="Points" onPress={() => router.push('/rewards')} />
+            <StatCard icon="ticket" value={String(p.ticketsReady)} label="Tickets ready" onPress={() => router.push('/tickets')} dim={p.ticketsReady === 0} />
+            <TierCard p={p} />
+            <StatCard
+              icon="flag"
+              value={p.currentKart ? `#${p.currentKart.number}` : '–'}
+              label={p.currentKart ? `Current kart · ${p.currentKart.status === 'running' ? 'on track' : 'next session'}` : 'Current kart'}
+              onPress={p.currentKart ? () => router.push(`/session/${p.currentKart!.sessionId}`) : undefined}
+              tall
+            />
           </View>
-          <Switch
-            value={driver.showOnLeaderboards}
-            onValueChange={async (v) => {
-              await api.updateMyDriver({ showOnLeaderboards: v });
-              await onChanged();
-            }}
-            trackColor={{ true: colors.you, false: colors.border }}
-            accessibilityLabel="Show me on public leaderboards"
-          />
-        </View>
-      </Card>
-      <Button title="Sign out" variant="danger" onPress={onSignOut} />
+
+          <View style={styles.tiles}>
+            <Tile icon="sign" title="Sign Indemnity" sub={waiverSub} warn={!waiverOk} onPress={() => router.push('/waiver')} />
+            <Tile icon="speed" title="My Racing" sub={`${p.lapsDriven} laps`} onPress={() => router.push('/my-racing')} />
+          </View>
+
+          <Section title="History">
+            <View style={styles.history}>
+              <Round icon="cart" bg="#6a3df0" label="My Purchase" onPress={() => router.push('/receipts')} />
+              <Round icon="star" bg="#1f9b55" label="My Rewards" onPress={() => router.push('/rewards')} />
+              <Round icon="doc" bg="#e2533d" label="My Indemnity" onPress={() => router.push('/my-indemnity')} />
+            </View>
+          </Section>
+          <Section title="Vouchers">
+            <Row label="My Vouchers" onPress={() => router.push('/vouchers')} />
+          </Section>
+          <Section title="Friends">
+            <Row label="Friends & requests" onPress={() => router.push('/friends')} />
+          </Section>
+          <Section title="Security">
+            <Row label="Password" onPress={() => router.push('/password')} />
+          </Section>
+          <Section title="Privacy">
+            <View style={styles.switchRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.rowLabel}>Show me on public leaderboards</Text>
+                <Muted style={{ fontSize: 12 }}>When off, others see "Private driver". Friends still see you.</Muted>
+              </View>
+              <Switch
+                value={me.driver.showOnLeaderboards}
+                onValueChange={async (v) => {
+                  await api.updateMyDriver({ showOnLeaderboards: v });
+                  await refresh();
+                }}
+                trackColor={{ true: colors.accent, false: colors.border }}
+                accessibilityLabel="Show me on public leaderboards"
+              />
+            </View>
+          </Section>
+          <Muted style={{ fontSize: 12 }}>
+            Member since {formatDate(p.driver.memberSince)} · {p.driver.email}
+          </Muted>
+          <Button title="Sign out" variant="danger" onPress={() => void signOut()} />
+        </>
+      )}
     </Screen>
   );
 }
 
-/** Best lap per session over time, for one track (comparing tracks would be meaningless). */
-function Progress({ sessions }: { sessions: DriverSession[] }) {
-  const tracks = [...new Map(sessions.filter((s) => s.bestLap).map((s) => [s.track.id, s.track.name])).entries()];
-  const [trackId, setTrackId] = useState('');
-  const current = trackId || tracks[0]?.[0];
-  const points = useMemo(
-    () =>
-      sessions
-        .filter((s) => s.track.id === current && s.bestLap)
-        .map((s) => ({ x: new Date(s.session.startedAt).getTime(), y: s.bestLap!.us }))
-        .sort((a, b) => a.x - b.x),
-    [sessions, current],
-  );
-  if (points.length < 2) return null;
-  const bestIdx = points.reduce((b, p, i) => (p.y < points[b].y ? i : b), 0);
-  const first = points[0].y;
-  const best = points[bestIdx].y;
-
+function ProfileHeader({ p }: { p: Profile }) {
   return (
-    <>
-      <SectionTitle>Progress</SectionTitle>
-      {tracks.length > 1 && <Chips options={tracks.map(([value, label]) => ({ value, label }))} value={current} onChange={setTrackId} />}
-      <Card>
-        <Muted>
-          Best lap each session{best < first ? ` · ${((first - best) / 1e6).toFixed(3)}s faster than your first visit` : ''}. Lower is faster.
-        </Muted>
-        <LineChart
-          label={`Your best lap per session on ${tracks.find((t) => t[0] === current)?.[1] ?? 'this track'}`}
-          formatX={(x) => new Date(x).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
-          formatY={formatLap}
-          series={[{ name: 'Best lap', color: colors.series1, points, highlight: { index: bestIdx, label: `PB ${formatLap(best)}` } }]}
-        />
-      </Card>
-    </>
-  );
-}
-
-/** Your fastest lap and session count per kart number. */
-function KartStats({ sessions }: { sessions: DriverSession[] }) {
-  const byKart = new Map<string, { best: number; count: number }>();
-  for (const s of sessions) {
-    const karts = (s.karts ?? '').split(', ').filter(Boolean);
-    if (karts.length !== 1 || !s.bestLap) continue; // skip kart swaps: the best lap can't be attributed
-    const k = byKart.get(karts[0]) ?? { best: Infinity, count: 0 };
-    byKart.set(karts[0], { best: Math.min(k.best, s.bestLap.us), count: k.count + 1 });
-  }
-  const rows = [...byKart.entries()].sort((a, b) => a[1].best - b[1].best);
-  if (rows.length < 2) return null;
-  return (
-    <>
-      <SectionTitle>Your karts</SectionTitle>
-      <Card style={{ gap: 0, paddingVertical: 4 }}>
-        {rows.map(([kart, r], i) => (
-          <View key={kart} style={[styles.kartRow, i > 0 && styles.divider]} accessible accessibilityLabel={`Kart ${kart}: best ${formatLap(r.best)} over ${r.count} sessions`}>
-            <Text style={styles.title}>Kart {kart}</Text>
-            <Muted style={{ flex: 1 }}>
-              {r.count} session{r.count > 1 ? 's' : ''}
-            </Muted>
-            <Text style={[styles.time, i === 0 && { color: colors.purple }]}>{formatLap(r.best)}</Text>
-          </View>
-        ))}
-      </Card>
-      <Muted style={{ fontSize: 12 }}>Your best lap in each kart. Mixed tracks and conditions included, so treat it as a rough guide.</Muted>
-    </>
-  );
-}
-
-function LinkRow({ title, subtitle, onPress, warn }: { title: string; subtitle: string; onPress: () => void; warn?: boolean }) {
-  return (
-    <Card onPress={onPress} style={warn ? { borderColor: colors.amber } : undefined}>
-      <View style={styles.linkRow}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.title}>{title}</Text>
-          <Muted style={warn ? { color: colors.amber } : undefined}>{subtitle}</Muted>
-        </View>
-        <Icon name="chevron" color={colors.muted} size={20} />
+    <Pressable onPress={() => router.push('/my-racing')} accessibilityRole="button" accessibilityLabel={`${p.driver.name}, ${p.tier.name} member. Opens my racing.`} style={styles.header}>
+      <View style={styles.avatar}>
+        <Text style={styles.avatarText}>{p.driver.name.slice(0, 1).toUpperCase()}</Text>
       </View>
-    </Card>
+      <View style={{ flex: 1, gap: 8 }}>
+        <Text style={styles.name} numberOfLines={1}>
+          {p.driver.name.toUpperCase()}
+        </Text>
+        <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+          <View style={styles.pill}>
+            <Icon name="speed" color={colors.purple} size={16} />
+            <Text style={styles.pillText}>{p.tier.name}</Text>
+          </View>
+          <View style={styles.pill}>
+            <Icon name="user" color={colors.accent} size={16} />
+            <Text style={styles.pillText}>Member</Text>
+          </View>
+        </View>
+      </View>
+      <Icon name="chevron" color={colors.text} size={22} />
+    </Pressable>
+  );
+}
+
+/** "Daily top 3" trophy per venue: lit once you've finished a day in the top 3 there. */
+function Achievements({ p }: { p: Profile }) {
+  return (
+    <View style={styles.achievements}>
+      {p.achievements.map((a) => (
+        <View
+          key={a.venueId}
+          style={styles.achievement}
+          accessible
+          accessibilityLabel={`${a.shortName}: ${a.days ? `daily top 3 on ${a.days} day${a.days > 1 ? 's' : ''}` : 'no daily top 3 yet'}`}
+        >
+          <View style={[styles.trophyRing, { borderColor: a.days ? a.color : colors.border, opacity: a.days ? 1 : 0.45 }]}>
+            <Trophy color={a.days ? colors.gold : colors.muted} size={30} />
+            <Text style={styles.daily}>DAILY TOP 3</Text>
+          </View>
+          {a.days > 1 && <Text style={styles.count}>×{a.days}</Text>}
+          <Text style={styles.venueShort}>{a.shortName}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function StatCard({ icon, value, label, onPress, dim, tall }: { icon: IconName; value: string; label: string; onPress?: () => void; dim?: boolean; tall?: boolean }) {
+  return (
+    <Pressable onPress={onPress} disabled={!onPress} accessibilityRole={onPress ? 'button' : undefined} accessibilityLabel={`${label}: ${value}`} style={[styles.card, styles.cardGreen, dim && { opacity: 0.6 }, tall && { minHeight: 150 }]}>
+      <Icon name={icon} color={colors.lime} size={28} />
+      <Text style={styles.cardValue} numberOfLines={1} adjustsFontSizeToFit>
+        {value}
+      </Text>
+      <Text style={styles.cardLabel} numberOfLines={2}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+function TierCard({ p }: { p: Profile }) {
+  const t = p.tier;
+  return (
+    <View
+      style={[styles.card, styles.cardPurple, { minHeight: 150 }]}
+      accessible
+      accessibilityLabel={`${t.name} tier. Mileage ${p.mileageKm} kilometres.${t.next ? ` ${t.kmToNext} kilometres to ${t.next}.` : ''}`}
+    >
+      <Text style={styles.tierName}>{t.name}</Text>
+      <View style={styles.progressTrack}>
+        <View style={[styles.progressFill, { width: `${Math.max(4, t.progress * 100)}%` }]} />
+        <Text style={styles.progressText} numberOfLines={1}>
+          {t.next ? `${t.kmToNext} KM to ${t.next}` : 'Top tier'}
+        </Text>
+      </View>
+      <Text style={styles.cardValue} numberOfLines={1}>
+        {p.mileageKm.toFixed(2)}
+        <Text style={styles.unit}> KM</Text>
+      </Text>
+      <Text style={styles.cardLabel}>My Mileage</Text>
+    </View>
+  );
+}
+
+function Tile({ icon, title, sub, onPress, warn }: { icon: IconName; title: string; sub: string; onPress: () => void; warn?: boolean }) {
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${title}, ${sub}`} style={({ pressed }) => [styles.tile, pressed && { opacity: 0.7 }]}>
+      <Icon name={icon} color={colors.lime} size={34} />
+      <View style={{ flex: 1 }}>
+        <Text style={styles.tileTitle}>{title}</Text>
+        <Text style={[styles.tileSub, warn && { color: colors.amber }]}>{sub}</Text>
+      </View>
+    </Pressable>
+  );
+}
+
+function Round({ icon, bg, label, onPress }: { icon: IconName; bg: string; label: string; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={label} style={styles.round}>
+      <View style={[styles.roundIcon, { backgroundColor: bg }]}>
+        <Icon name={icon} color="#fff" size={28} />
+      </View>
+      <Text style={styles.roundLabel}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function Section({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <View style={{ gap: 4, marginTop: 8 }}>
+      <Text style={styles.section} accessibilityRole="header">
+        {title}
+      </Text>
+      {children}
+    </View>
+  );
+}
+
+function Row({ label, onPress }: { label: string; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" style={({ pressed }) => [styles.row, pressed && { opacity: 0.6 }]}>
+      <Text style={styles.rowLabel}>{label}</Text>
+      <Icon name="chevron" color={colors.text} size={20} />
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  title: { color: colors.text, fontSize: 15, fontWeight: '700' },
-  switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  kartRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
-  divider: { borderTopWidth: 1, borderTopColor: colors.border },
-  time: { color: colors.text, fontSize: 16, fontWeight: '700', ...mono },
-  linkRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  qrRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 12 },
+  qrText: { color: colors.accent, fontSize: 24, fontWeight: '900' },
+  qrCircle: { width: 50, height: 50, borderRadius: 25, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 4 },
+  avatar: { width: 76, height: 76, borderRadius: 38, borderWidth: 2, borderColor: colors.lime, backgroundColor: colors.surface2, alignItems: 'center', justifyContent: 'center' },
+  avatarText: { color: colors.lime, fontSize: 34, fontWeight: '900' },
+  name: { color: colors.text, fontSize: 22, fontWeight: '900' },
+  pill: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 5 },
+  pillText: { color: colors.text, fontSize: 14 },
+  achievements: { flexDirection: 'row', justifyContent: 'space-around', flexWrap: 'wrap', gap: 8, marginVertical: 6 },
+  achievement: { alignItems: 'center', gap: 4, minWidth: 80 },
+  trophyRing: { width: 66, height: 66, borderRadius: 33, borderWidth: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: '#1b1730' },
+  daily: { color: colors.gold, fontSize: 7, fontWeight: '900', letterSpacing: 0.5 },
+  count: { position: 'absolute', top: -2, right: 4, color: colors.text, backgroundColor: colors.purple, fontSize: 11, fontWeight: '800', borderRadius: 8, paddingHorizontal: 5, overflow: 'hidden' },
+  venueShort: { color: colors.text, fontSize: 13, letterSpacing: 0.5 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  card: { flexBasis: '47%', flexGrow: 1, backgroundColor: '#1a1d2b', borderRadius: radius.lg, borderWidth: 2, padding: 16, gap: 6, minHeight: 130, justifyContent: 'flex-end' },
+  cardGreen: { borderColor: colors.lime },
+  cardPurple: { borderColor: colors.purple },
+  cardValue: { color: colors.text, fontSize: 28, fontWeight: '900', letterSpacing: 1, ...mono },
+  cardLabel: { color: colors.text, fontSize: 15 },
+  unit: { fontSize: 16, fontWeight: '800', letterSpacing: 0 },
+  tierName: { color: colors.text, fontSize: 20, fontWeight: '900', letterSpacing: 2, textAlign: 'center' },
+  progressTrack: { height: 22, borderRadius: 11, backgroundColor: '#f2f4fb', overflow: 'hidden', justifyContent: 'center' },
+  progressFill: { position: 'absolute', left: 0, top: 0, bottom: 0, backgroundColor: '#9ecbff' },
+  progressText: { color: '#10142a', fontSize: 11, fontWeight: '600', textAlign: 'center' },
+  tiles: { flexDirection: 'row', gap: 12 },
+  tile: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#12241f', borderRadius: radius.md, padding: 16, minHeight: 72 },
+  tileTitle: { color: colors.text, fontSize: 16, fontWeight: '600' },
+  tileSub: { color: colors.muted, fontSize: 13 },
+  section: { color: colors.text, fontSize: 20, fontWeight: '600', marginBottom: 8 },
+  history: { flexDirection: 'row', justifyContent: 'space-around' },
+  round: { alignItems: 'center', gap: 8, minWidth: 96 },
+  roundIcon: { width: 58, height: 58, borderRadius: 29, alignItems: 'center', justifyContent: 'center' },
+  roundLabel: { color: colors.text, fontSize: 14 },
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.border, minHeight: 48 },
+  rowLabel: { color: colors.text, fontSize: 16 },
+  switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8 },
 });

@@ -101,10 +101,11 @@ export function publicRoutes(app: FastifyInstance, ctx: AppContext) {
 
   // ── Venues & tracks ─────────────────────────────────────────────────────
   app.get('/venues', async () =>
-    many(db, `SELECT v.id, v.name, v.timezone,
-                     coalesce(json_agg(json_build_object('id', t.id, 'name', t.name, 'layout', t.layout, 'lengthM', t.length_m))
+    many(db, `SELECT v.id, v.name, v.timezone, coalesce(v.short_name, v.name) AS "shortName", v.kind, v.accent_color AS "accentColor", v.tagline,
+                     coalesce(json_agg(json_build_object('id', t.id, 'name', t.name, 'layout', t.layout, 'lengthM', t.length_m, 'mapPath', t.map_path)
+                                       ORDER BY t.created_at)
                               FILTER (WHERE t.id IS NOT NULL AND t.active), '[]') AS tracks
-                FROM venues v LEFT JOIN tracks t ON t.venue_id = v.id GROUP BY v.id ORDER BY v.name`),
+                FROM venues v LEFT JOIN tracks t ON t.venue_id = v.id GROUP BY v.id ORDER BY v.sort, v.name`),
   );
 
   app.get('/tracks/:id/leaderboard', async (req) => {

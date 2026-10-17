@@ -251,7 +251,8 @@ export async function trackLeaderboard(q: Queryable, trackId: string, period: Pe
           AND (d.show_on_leaderboards OR d.id = $4::uuid)
         ORDER BY l.driver_id, k.class_id, l.duration_us, l.ended_us
      )
-     SELECT b.*, d.display_name, kc.name AS class_name FROM best b
+     -- Walk-ins have no account and never opted in to public boards: show them as "Guest".
+     SELECT b.*, CASE WHEN d.user_id IS NULL THEN 'Guest' ELSE d.display_name END AS display_name, kc.name AS class_name FROM best b
        JOIN drivers d ON d.id = b.driver_id LEFT JOIN kart_classes kc ON kc.id = b.class_id
       ORDER BY b.duration_us, b.ended_us
       LIMIT $5`,
@@ -287,7 +288,8 @@ export async function trackRecords(q: Queryable, trackId: string) {
   const rows = await many<Record<string, any>>(
     q,
     `SELECT DISTINCT ON (k.class_id) k.class_id, kc.name AS class_name, l.duration_us, l.session_id, s.started_at,
-            d.id AS driver_id, CASE WHEN d.show_on_leaderboards THEN d.display_name ELSE 'Private driver' END AS driver_name
+            d.id AS driver_id,
+            CASE WHEN d.user_id IS NULL THEN 'Guest' WHEN d.show_on_leaderboards THEN d.display_name ELSE 'Private driver' END AS driver_name
        FROM laps l JOIN sessions s ON s.id = l.session_id LEFT JOIN drivers d ON d.id = l.driver_id
        LEFT JOIN karts k ON k.id = l.kart_id LEFT JOIN kart_classes kc ON kc.id = k.class_id
       WHERE s.track_id = $1 AND s.status = 'final' AND l.valid

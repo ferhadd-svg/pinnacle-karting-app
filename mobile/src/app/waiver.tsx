@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { Button, Card, ErrorBox, Loading, Muted, Screen } from '../components/ui';
+import { Button, Card, Chips, ErrorBox, Loading, Muted, Screen } from '../components/ui';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { formatDate } from '../lib/format';
@@ -12,9 +12,11 @@ import { colors, radius } from '../lib/theme';
 export default function WaiverScreen() {
   const { me } = useAuth();
   const venues = useAsync(() => api.venues(), []);
-  const venueId = venues.data?.[0]?.id;
-  const tpl = useAsync(() => (venueId ? api.waiver(venueId) : Promise.resolve(null)), [venueId]);
   const status = useAsync(() => api.myWaivers(), []);
+  const [chosen, setChosen] = useState('');
+  // Default to the first venue still needing a signature.
+  const venueId = chosen || status.data?.find((w) => !w.valid)?.venue.id || venues.data?.[0]?.id;
+  const tpl = useAsync(() => (venueId ? api.waiver(venueId) : Promise.resolve(null)), [venueId]);
   const [name, setName] = useState('');
   const [guardian, setGuardian] = useState('');
   const [agree, setAgree] = useState(false);
@@ -25,7 +27,7 @@ export default function WaiverScreen() {
   }, [me, name]);
 
   const current = status.data?.find((s) => s.venue.id === venueId);
-  if (tpl.loading || status.loading) return <Loading />;
+  if ((tpl.loading && !tpl.data) || (status.loading && !status.data)) return <Loading />;
   if (tpl.error) return <Screen topInset={false}><ErrorBox message={tpl.error} onRetry={() => tpl.reload()} /></Screen>;
   if (!tpl.data) return null;
 
@@ -44,9 +46,23 @@ export default function WaiverScreen() {
 
   return (
     <Screen topInset={false}>
+      {(venues.data?.length ?? 0) > 1 && (
+        <Chips
+          options={(venues.data ?? []).map((v) => {
+            const st = status.data?.find((w) => w.venue.id === v.id);
+            return { value: v.id, label: `${st?.valid ? '✓ ' : ''}${v.shortName}` };
+          })}
+          value={venueId ?? ''}
+          onChange={(v) => {
+            setChosen(v);
+            setAgree(false);
+            setError(null);
+          }}
+        />
+      )}
       <Text style={styles.h1}>{tpl.data.title}</Text>
       <Muted>
-        {venues.data?.[0]?.name} · version {tpl.data.version} · valid for {tpl.data.validDays} days
+        {venues.data?.find((v) => v.id === venueId)?.name} · version {tpl.data.version} · valid for {tpl.data.validDays} days
       </Muted>
       {current?.valid && (
         <Card style={{ borderColor: colors.you }}>
