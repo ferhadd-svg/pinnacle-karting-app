@@ -6,6 +6,8 @@ import { Platform } from 'react-native';
  * use the computer's LAN address (e.g. http://192.168.1.20:3000), not localhost.
  */
 export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
+/** EXPO_PUBLIC_DEMO=1 builds a self-contained demo: API calls are answered on the device (lib/demo). */
+export const DEMO = process.env.EXPO_PUBLIC_DEMO === '1';
 const TOKEN_KEY = 'pinnacle.token';
 
 export class ApiError extends Error {
@@ -57,6 +59,12 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   const headers: Record<string, string> = {};
   if (body !== undefined) headers['content-type'] = 'application/json';
   if (token) headers.authorization = `Bearer ${token}`;
+  if (DEMO) {
+    const { demoRequest } = require('./demo/backend') as typeof import('./demo/backend');
+    const r = await demoRequest(method, path, body, !!token);
+    if (r.status >= 400) throw new ApiError(r.status, r.data.error, r.data.message);
+    return r.data as T;
+  }
   let res: Response;
   try {
     res = await fetch(`${API_URL}/v1${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });

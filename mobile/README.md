@@ -19,6 +19,25 @@ address, not `localhost`: on the phone, `localhost` is the phone itself. Start t
 Demo login after `npm run seed -w @pinnacle/server` in the repo root: create an account in the app, or
 use the staff console to assign yourself to a kart by member code.
 
+## Demo mode (no server needed)
+
+```bash
+EXPO_PUBLIC_DEMO=1 npx expo start                                   # on a phone with Expo Go
+EXPO_PUBLIC_DEMO=1 npx expo export --platform web --output-dir dist # static web demo, one JS bundle
+```
+
+`EXPO_PUBLIC_DEMO=1` answers every API call on the device (`src/lib/demo/backend.ts`):
+
+- Read-only data is real API output recorded from a seeded server (`src/lib/demo/fixtures.json`).
+- Purchases, waiver signing, rewards, friends and settings change a local copy, saved in the browser in
+  the web demo.
+- One 10-minute session is always on track, simulated lap by lap from the clock, so the live view always
+  has karts moving.
+
+Sign in with the "Use the demo account" button (Farah, `farah@example.com` / `farah-demo-pass`); new
+sign-ups are switched off. `app.config.js` turns off per-screen code splitting for demo builds, so the web
+demo is a single bundle that can be hosted from any folder.
+
 ## Checks
 
 ```bash
@@ -35,11 +54,14 @@ src/app/                 Expo Router screens (file = route)
   store/[venueId].tsx    Venue store: products, checkout
   venue/[id].tsx         Venue leaderboards (records, periods, friends)
   session/[id].tsx       Session result: your race, head-to-head, standings, lap-by-lap
+  live/[id].tsx          Live view: karts moving on the track map, timing tower, session clock
   ticket/[id].tsx        Ticket pass (QR + code, sessions used) and transfer
   card.tsx               Full-screen member QR for check-in
   results, rewards, vouchers, my-racing, my-indemnity, receipts, waiver, friends, password, redeem, sign-in
 src/components/          UI kit, LineChart (react-native-svg), LapBars, MemberCard (QR), race panels
 src/lib/                 API client (token in Keychain/Keystore via expo-secure-store), auth, hooks, theme
+  trackPath.ts           Samples a track outline so karts can be placed by "fraction of the lap"
+  demo/                  Built-in demo backend and recorded data (EXPO_PUBLIC_DEMO=1)
 ```
 
 ## Building for the stores

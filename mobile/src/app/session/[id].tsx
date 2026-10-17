@@ -1,8 +1,8 @@
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LapBars } from '../../components/LapBars';
-import { Eyebrow, ErrorBox, Loading, Muted, Screen, SectionTitle, StatusBadge, StatusNote } from '../../components/ui';
+import { Button, Eyebrow, ErrorBox, Loading, Muted, Screen, SectionTitle, StatusBadge, StatusNote } from '../../components/ui';
 import { YourRace } from '../../components/YourRace';
 import { api, type Lap, type LeaderboardEntry } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
@@ -59,6 +59,7 @@ export default function SessionScreen() {
         <StatusBadge status={resultStatus} />
       </View>
       <StatusNote status={resultStatus} />
+      {resultStatus === 'live' && <Button title="Watch live on the track map" onPress={() => router.push(`/live/${id}`)} />}
 
       {me?.driver && laps.data && (
         <YourRace sessionId={id} myDriverId={me.driver.id} entries={entries} laps={laps.data} resultStatus={resultStatus} personalBests={pbs.data ?? []} />

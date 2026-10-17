@@ -26,7 +26,7 @@ export default function Home() {
           { icon: 'flag', label: 'Join Race', onPress: () => router.push('/store') },
           { icon: 'sign', label: 'Indemnity', onPress: () => router.push(me ? '/waiver' : '/sign-in') },
           { icon: 'gift', label: 'Rewards', onPress: () => router.push(me ? '/rewards' : '/sign-in'), dim: !me },
-          { icon: 'live', label: 'Live', onPress: () => router.push('/results') },
+          { icon: 'live', label: 'Live', onPress: () => router.push(live[0] ? `/live/${live[0].id}` : '/results') },
         ]}
       />
 

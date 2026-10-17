@@ -69,7 +69,7 @@ export default function MeScreen() {
               icon="flag"
               value={p.currentKart ? `#${p.currentKart.number}` : '–'}
               label={p.currentKart ? `Current kart · ${p.currentKart.status === 'running' ? 'on track' : 'next session'}` : 'Current kart'}
-              onPress={p.currentKart ? () => router.push(`/session/${p.currentKart!.sessionId}`) : undefined}
+              onPress={p.currentKart ? () => router.push(`/${p.currentKart!.status === 'running' ? 'live' : 'session'}/${p.currentKart!.sessionId}`) : undefined}
               tall
             />
           </View>

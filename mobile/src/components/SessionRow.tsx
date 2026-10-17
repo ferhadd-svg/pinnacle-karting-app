@@ -8,7 +8,7 @@ import { Card, Muted, StatusBadge } from './ui';
 
 export function SessionRow({ s }: { s: SessionSummary }) {
   return (
-    <Card onPress={() => router.push(`/session/${s.id}`)}>
+    <Card onPress={() => router.push(s.resultStatus === 'live' ? `/live/${s.id}` : `/session/${s.id}`)}>
       <View style={styles.row}>
         <View style={{ flex: 1, gap: 2 }}>
           <Text style={styles.title} numberOfLines={1}>

@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { useState, type ComponentProps } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button, Muted } from '../components/ui';
+import { DEMO } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { colors, radius, weight } from '../lib/theme';
 
@@ -54,6 +55,20 @@ export default function SignIn() {
           </Text>
         )}
         <Button title={mode === 'login' ? 'Sign in' : 'Create account'} onPress={submit} disabled={!valid} loading={busy} />
+        {DEMO && mode === 'login' && (
+          <View style={styles.demo}>
+            <Text style={styles.demoTitle}>Trying the demo?</Text>
+            <Muted>Sign in as Farah, a member with race history, tickets and points. Everything you do stays on this device.</Muted>
+            <Button
+              title="Use the demo account"
+              variant="secondary"
+              onPress={() => {
+                setEmail('farah@example.com');
+                setPassword('farah-demo-pass');
+              }}
+            />
+          </View>
+        )}
         <Button
           title={mode === 'login' ? 'New here? Create an account' : 'I already have an account'}
           variant="secondary"
@@ -78,6 +93,8 @@ function Field({ label, ...props }: { label: string } & ComponentProps<typeof Te
 
 const styles = StyleSheet.create({
   wrap: { padding: 24, gap: 16 },
+  demo: { gap: 8, padding: 14, borderRadius: radius.md, borderWidth: 1, borderColor: colors.accent, backgroundColor: colors.surface },
+  demoTitle: { color: colors.text, fontSize: 16, fontWeight: weight.light },
   h1: { color: colors.text, fontSize: 26, fontWeight: weight.thin },
   label: { color: colors.muted, fontSize: 13 },
   input: { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: radius.md, color: colors.text, fontSize: 16, paddingHorizontal: 14, minHeight: 50 },

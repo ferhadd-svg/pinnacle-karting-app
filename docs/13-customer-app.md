@@ -16,7 +16,7 @@ listings directly, so treat this as 🔶 reported, not verified):
 | Buy tickets for go-kart sessions | Shop → order → payment → tickets in wallet, receipts | ✅ (demo payment provider; real gateway pending ❓) |
 | Redeem kiosk tickets into the app | Enter the receipt code; staff can issue counter/kiosk codes | ✅ |
 | Transfer tickets to other members | Send a ticket by member code | ✅ |
-| Real-time leaderboards / live race results | Live & results tab, live session view refreshing every 3 s | ✅ |
+| Real-time leaderboards / live race results | Live & results tab; **live view** with karts moving round the track map and a timing tower, refreshing every 3 s (positions between crossings are estimated from each kart's lap pace) | ✅ |
 | Monthly best lap per track | Leaderboards: this month / week / today / all time, track records per kart class | ✅ |
 | My race result | "Your result" card: position, best, average, consistency, gap to fastest, new-PB badge | ✅ |
 | Compare with friends | Friends by member code; friends leaderboard; head-to-head lap comparison in any session | ✅ |
