@@ -47,6 +47,37 @@ for (let n = 1; n <= 12; n++) {
   const tx = (await post('/v1/transponders', { venueId, code: `T1${num}` })).id;
   await post('/v1/transponder-assignments', { transponderId: tx, kartId: karts[num], from: '2026-01-01T00:00:00Z' });
 }
+// Customer app catalogue: ticket products, waiver, rewards (prices in sen).
+await db.query(
+  `INSERT INTO products (venue_id, name, description, session_type, price_sen, min_age, sort) VALUES
+     ($1, 'Arrive & Drive', '10-minute timed session on the Main Circuit', 'rental', 7000, 12, 1),
+     ($1, 'Arrive & Drive ×3', 'Three timed sessions, save RM30', 'rental', 18000, 12, 2),
+     ($1, 'Grand Prix', 'Qualifying plus a 12-lap race with podium', 'sprint', 16000, 14, 3),
+     ($1, 'Junior Cadet', '8-minute session for ages 7–13', 'rental', 5000, 7, 4)`,
+  [venueId],
+);
+await db.query(
+  `INSERT INTO waiver_templates (venue_id, version, title, body) VALUES ($1, 1, 'Karting participation waiver', $2)`,
+  [
+    venueId,
+    [
+      'Karting is a motorsport and involves risk of injury. By signing, I confirm that:',
+      '1. I will follow the safety briefing and all marshal instructions, and wear the helmet and equipment provided.',
+      '2. I am fit to drive and not under the influence of alcohol or drugs.',
+      '3. I accept the risks of participating and that the venue may refuse or stop my session for safety reasons.',
+      '4. Drivers under 18 must have this waiver signed by a parent or guardian.',
+      'This is placeholder text for development. The venue must supply its own legally reviewed waiver.',
+    ].join('\n\n'),
+  ],
+);
+await db.query(
+  `INSERT INTO reward_items (venue_id, name, description, cost_tokens, sort) VALUES
+     ($1, 'Soft drink', 'Any canned drink at the café', 30, 1),
+     ($1, 'Pinnacle cap', 'Embroidered team cap', 150, 2),
+     ($1, 'Free Arrive & Drive', 'One 10-minute session', 250, 3)`,
+  [venueId],
+);
+
 const device = await post('/v1/devices', { trackId, name: 'Start/finish decoder', provider: 'gateway:simulator' });
 
 const names = ['Aiman Hakim', 'Mei Ling Tan', 'Rajesh Kumar', 'Sofia Rahman', 'Daniel Lee', 'Nurul Izzah', 'Arjun Nair', 'Hannah Wong'];

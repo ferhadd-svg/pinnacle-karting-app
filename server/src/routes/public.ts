@@ -73,7 +73,7 @@ export function publicRoutes(app: FastifyInstance, ctx: AppContext) {
     const u = requireUser(req.principal);
     const row = await one<Record<string, any>>(
       db,
-      `SELECT u.id, u.email, u.role, u.venue_id, d.id AS driver_id, d.display_name, d.show_on_leaderboards
+      `SELECT u.id, u.email, u.role, u.venue_id, d.id AS driver_id, d.display_name, d.show_on_leaderboards, d.member_code
          FROM users u LEFT JOIN drivers d ON d.user_id = u.id WHERE u.id = $1`,
       [u.userId],
     );
@@ -82,7 +82,9 @@ export function publicRoutes(app: FastifyInstance, ctx: AppContext) {
       email: row.email,
       role: row.role,
       venueId: row.venue_id,
-      driver: row.driver_id ? { id: row.driver_id, name: row.display_name, showOnLeaderboards: row.show_on_leaderboards } : null,
+      driver: row.driver_id
+        ? { id: row.driver_id, name: row.display_name, showOnLeaderboards: row.show_on_leaderboards, memberCode: row.member_code }
+        : null,
     };
   });
 

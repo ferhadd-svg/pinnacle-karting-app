@@ -36,7 +36,7 @@ export async function resetDb(db: Db) {
 export async function setupWorld(): Promise<World> {
   const db = createPool(TEST_DB);
   await resetDb(db);
-  const app = await buildApp({ db, jwtSecret: 'test-secret', logLevel: 'silent' });
+  const app = await buildApp({ db, jwtSecret: 'test-secret', logLevel: 'silent', paymentsProvider: 'demo' });
 
   await db.query(`INSERT INTO users (email, password_hash, role) VALUES ('admin@test', $1, 'admin')`, [await hashPassword('admin-password')]);
   const login = await app.inject({ method: 'POST', url: '/v1/auth/login', payload: { email: 'admin@test', password: 'admin-password' } });
@@ -83,7 +83,7 @@ export async function setupWorld(): Promise<World> {
 
 export function client(w: World, token: string | null = w.adminToken) {
   const headers = token ? { authorization: `Bearer ${token}` } : {};
-  const call = async (method: 'GET' | 'POST' | 'PATCH', url: string, payload?: unknown, expect?: number) => {
+  const call = async (method: 'GET' | 'POST' | 'PATCH' | 'DELETE', url: string, payload?: unknown, expect?: number) => {
     const r = await w.app.inject({ method, url, payload: payload as object, headers });
     if (expect !== undefined && r.statusCode !== expect) throw new Error(`${method} ${url} → ${r.statusCode} (wanted ${expect}) ${r.body}`);
     if (expect === undefined && r.statusCode >= 300) throw new Error(`${method} ${url} → ${r.statusCode} ${r.body}`);
@@ -93,6 +93,7 @@ export function client(w: World, token: string | null = w.adminToken) {
     get: (url: string, expect?: number) => call('GET', url, undefined, expect),
     post: (url: string, payload?: unknown, expect?: number) => call('POST', url, payload ?? {}, expect),
     patch: (url: string, payload?: unknown, expect?: number) => call('PATCH', url, payload ?? {}, expect),
+    del: (url: string, expect?: number) => call('DELETE', url, undefined, expect),
   };
 }
 

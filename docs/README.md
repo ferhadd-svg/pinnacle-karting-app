@@ -23,6 +23,7 @@ not inspected that app or any circuit's timing system, and nothing here assumes 
 | 12 | Deployment & hosting architecture | [10-deployment.md](10-deployment.md) |
 | 13 | Development & operating costs (MYR) | [11-costs.md](11-costs.md) |
 | 14 | Phased roadmap, MVP → commercial product | [12-roadmap.md](12-roadmap.md) |
+| + | Customer app (iOS/Android), RUD-style feature parity | [13-customer-app.md](13-customer-app.md) |
 
 ## How to read the status markers
 
@@ -38,6 +39,7 @@ Every component distinguishes what we know from what we are guessing:
 
 Phase 1 (MVP) is implemented and tested. See the [roadmap](12-roadmap.md) for what is done and what's next.
 
-- `server/` — timing API, lap engine, PostgreSQL schema, CSV import, reference gateway, 63 tests.
-- `web/` — mobile-friendly driver app (PWA) and operator console.
+- `server/` — timing API, lap engine, customer APIs, PostgreSQL schema, CSV import, reference gateway, 80 tests.
+- `mobile/` — native customer app (Expo / React Native): check-in QR, live results, tickets, waiver, rewards, friends.
+- `web/` — operator console and front desk (the older web customer pages remain as a fallback).
 - `docs/samples/passings-sample.csv` — sample passings export used by the seed data.

@@ -13,7 +13,8 @@ staff in an operator console. Designed to integrate with existing timing systems
 |---|---|
 | `server/` | Timing API (Node 22, TypeScript, Fastify, PostgreSQL): lap engine, CSV import, session lifecycle, corrections, results, leaderboards, SSE live updates, RBAC, reference trackside gateway |
 | `server/migrations/` | SQL schema |
-| `web/` | Mobile-first driver app (PWA) + operator console (React, Vite) |
+| `mobile/` | **Customer app for iOS & Android** (Expo / React Native): QR check-in, live results, my results, leaderboards, tickets, waiver, rewards, friends. See [mobile/README.md](mobile/README.md) |
+| `web/` | Operator console + front desk (React, Vite) |
 | `docs/` | Design documentation and a sample passings CSV |
 
 Highlights:
@@ -43,7 +44,9 @@ npm run simulate -w @pinnacle/server -- --key tdk_… --transponders T109,T110,T
 Tests (wipe and rebuild `karting_test`):
 
 ```bash
-npm test                           # 63 tests: lap engine, API, reliability, endurance, security
+npm test                           # 80 tests: lap engine, API, reliability, endurance, security, customer features
 ```
+
+Customer app: `cd mobile && npm install && EXPO_PUBLIC_API_URL=http://<LAN-IP>:3000 npx expo start`, then open it in Expo Go.
 
 Containers: `JWT_SECRET=$(openssl rand -base64 32) docker compose up --build`. See [docs/10-deployment.md](docs/10-deployment.md).

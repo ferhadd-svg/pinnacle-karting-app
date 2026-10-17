@@ -5,6 +5,7 @@ import { HttpError, type Db } from './db.js';
 import type { AppContext } from './http.js';
 import type { Realtime } from './realtime.js';
 import { adminRoutes } from './routes/admin.js';
+import { customerRoutes } from './routes/customer.js';
 import { publicRoutes } from './routes/public.js';
 import { timingRoutes } from './routes/timing.js';
 
@@ -14,6 +15,7 @@ export interface BuildOptions {
   realtime?: Realtime | null;
   corsOrigins?: string[];
   logLevel?: string;
+  paymentsProvider?: 'demo' | 'none';
 }
 
 export async function buildApp(opts: BuildOptions) {
@@ -22,9 +24,13 @@ export async function buildApp(opts: BuildOptions) {
     trustProxy: true,
   });
   const auth = createAuth(opts.jwtSecret);
-  const ctx: AppContext = { db: opts.db, realtime: opts.realtime ?? null, issueToken: auth.issueToken };
+  const ctx: AppContext = { db: opts.db, realtime: opts.realtime ?? null, issueToken: auth.issueToken, paymentsProvider: opts.paymentsProvider ?? 'none' };
 
-  await app.register(cors, { origin: opts.corsOrigins ?? true, allowedHeaders: ['Content-Type', 'Authorization', 'X-Device-Key'] });
+  await app.register(cors, {
+    origin: opts.corsOrigins ?? true,
+    methods: ['GET', 'HEAD', 'POST', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Device-Key'],
+  });
 
   app.decorateRequest('principal', null);
   app.addHook('onRequest', async (req) => {
@@ -54,6 +60,7 @@ export async function buildApp(opts: BuildOptions) {
       publicRoutes(v1, ctx);
       timingRoutes(v1, ctx);
       adminRoutes(v1, ctx);
+      customerRoutes(v1, ctx);
     },
     { prefix: '/v1' },
   );

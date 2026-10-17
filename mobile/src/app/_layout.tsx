@@ -1,0 +1,37 @@
+import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { AuthProvider } from '../lib/auth';
+import { colors } from '../lib/theme';
+
+const theme = {
+  ...DarkTheme,
+  colors: { ...DarkTheme.colors, background: colors.bg, card: colors.surface, border: colors.border, primary: colors.accent, text: colors.text },
+};
+
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <ThemeProvider value={theme}>
+        <StatusBar style="light" />
+        <Stack
+          screenOptions={{
+            headerStyle: { backgroundColor: colors.bg },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+            contentStyle: { backgroundColor: colors.bg },
+          }}
+        >
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="session/[id]" options={{ title: 'Session', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="card" options={{ presentation: 'modal', title: 'Member card' }} />
+          <Stack.Screen name="sign-in" options={{ presentation: 'modal', title: 'Sign in' }} />
+          <Stack.Screen name="shop" options={{ title: 'Buy tickets', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="ticket/[id]" options={{ title: 'Ticket', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="receipts" options={{ title: 'Receipts', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="waiver" options={{ title: 'Waiver', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="friends" options={{ title: 'Friends', headerBackTitle: 'Back' }} />
+        </Stack>
+      </ThemeProvider>
+    </AuthProvider>
+  );
+}

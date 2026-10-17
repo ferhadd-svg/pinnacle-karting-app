@@ -86,7 +86,7 @@ export async function sessionLeaderboard(q: Queryable, sessionId: string, viewer
   const session = await getSession(q, sessionId);
   const rows = await many<Record<string, any>>(
     q,
-    `SELECT p.id AS participant_id, p.team_name, p.status AS entry_status, d.id AS driver_id,
+    `SELECT p.id AS participant_id, p.team_name, p.status AS entry_status, d.id AS driver_id, d.user_id IS NOT NULL AS driver_is_member,
             ${nameSql('d', '$2', '$3')} AS driver_name,
             (SELECT string_agg(k.number, ' → ' ORDER BY pk.created_at) FROM participant_karts pk JOIN karts k ON k.id = pk.kart_id
               WHERE pk.participant_id = p.id) AS karts,
@@ -106,7 +106,7 @@ export async function sessionLeaderboard(q: Queryable, sessionId: string, viewer
     entries: rows.map((r) => ({
       participantId: r.participant_id,
       position: r.position,
-      driver: r.driver_id ? { id: r.driver_id, name: r.driver_name } : null,
+      driver: r.driver_id ? { id: r.driver_id, name: r.driver_name, isMember: r.driver_is_member as boolean } : null,
       teamName: r.team_name,
       karts: r.karts,
       lapsCompleted: r.laps_completed ?? 0,

@@ -2,6 +2,8 @@ import type { UserPrincipal } from '../auth.js';
 import { HttpError, many, one, type Tx } from '../db.js';
 import type { LapRules, SessionType } from '../timing/types.js';
 import { audit } from './audit.js';
+import { awardSessionTokens } from './customer.js';
+import { driverByMemberCode } from './members.js';
 import { lockSession, recomputeSession } from './processing.js';
 
 export interface CreateSessionInput {
@@ -28,6 +30,30 @@ export async function createSession(tx: Tx, actor: UserPrincipal, input: CreateS
   return s.id;
 }
 
+/**
+ * Move a walk-in driver's results to a member's account (customer drove before signing up).
+ * Only profiles without an account can be merged; the walk-in row is kept and marked merged.
+ */
+export async function linkWalkInToMember(tx: Tx, actor: UserPrincipal, walkInId: string, memberCode: string, reason: string) {
+  const w = await one<{ user_id: string | null; merged_into: string | null; display_name: string }>(
+    tx,
+    'SELECT user_id, merged_into, display_name FROM drivers WHERE id = $1 FOR UPDATE',
+    [walkInId],
+  );
+  if (w.user_id) throw new HttpError(409, 'This driver already has an account', 'bad_state');
+  if (w.merged_into) throw new HttpError(409, 'Already linked to a member', 'bad_state');
+  const member = await driverByMemberCode(tx, memberCode);
+  if (member.id === walkInId) throw new HttpError(400, 'Cannot link a driver to itself', 'invalid');
+  const counts = {
+    entries: (await tx.query('UPDATE session_participants SET driver_id = $2 WHERE driver_id = $1', [walkInId, member.id])).rowCount,
+    laps: (await tx.query('UPDATE laps SET driver_id = $2 WHERE driver_id = $1', [walkInId, member.id])).rowCount,
+    stints: (await tx.query('UPDATE stints SET driver_id = $2 WHERE driver_id = $1', [walkInId, member.id])).rowCount,
+  };
+  await tx.query('UPDATE drivers SET merged_into = $2 WHERE id = $1', [walkInId, member.id]);
+  await audit(tx, actor, 'driver.link', 'driver', walkInId, { before: { name: w.display_name }, after: { memberId: member.id, ...counts }, reason });
+  return { member, ...counts };
+}
+
 /** The transponder fitted to a kart at a given instant, per the assignment history. */
 async function transponderForKart(tx: Tx, kartId: string, at: string) {
   const r = await tx.query(
@@ -41,11 +67,12 @@ export async function addParticipant(
   tx: Tx,
   actor: UserPrincipal,
   sessionId: string,
-  input: { kartId: string; driverId?: string | null; driverName?: string | null; teamName?: string | null },
+  input: { kartId: string; driverId?: string | null; memberCode?: string | null; driverName?: string | null; teamName?: string | null },
 ) {
   const s = await lockSession(tx, sessionId);
   if (s.status === 'final' || s.status === 'cancelled') throw new HttpError(409, `Session is ${s.status}`, 'session_closed');
   let driverId = input.driverId ?? null;
+  if (!driverId && input.memberCode) driverId = (await driverByMemberCode(tx, input.memberCode)).id;
   if (!driverId && input.driverName) {
     // Walk-in customer without an app account; can be linked to an account later.
     driverId = (await one<{ id: string }>(tx, 'INSERT INTO drivers (display_name) VALUES ($1) RETURNING id', [input.driverName])).id;
@@ -136,12 +163,13 @@ export async function startSession(tx: Tx, actor: UserPrincipal, sessionId: stri
   }
   if (missing.length) throw new HttpError(409, `No transponder assigned to kart(s) ${missing.join(', ')}`, 'no_transponder');
 
-  // Hand transponders over from earlier, already-finished sessions (back-to-back rental sessions).
+  // Hand transponders over from earlier, already-finished sessions (back-to-back rental sessions, or a
+  // back-filled session inserted between two others): their range now ends where this one starts.
   await tx.query(
     `UPDATE participant_karts old SET active_during = tstzrange(lower(old.active_during), $2::timestamptz)
        FROM session_participants op JOIN sessions os ON os.id = op.session_id
       WHERE old.participant_id = op.id AND os.status IN ('finished', 'final') AND os.id <> $1
-        AND upper_inf(old.active_during) AND lower(old.active_during) < $2::timestamptz
+        AND old.active_during @> $2::timestamptz AND lower(old.active_during) < $2::timestamptz
         AND old.transponder_id IN (SELECT pk.transponder_id FROM participant_karts pk
                                      JOIN session_participants p ON p.id = pk.participant_id WHERE p.session_id = $1)`,
     [sessionId, startAt],
@@ -197,6 +225,7 @@ export async function finalizeSession(tx: Tx, actor: UserPrincipal, sessionId: s
   if (s.status !== 'finished') throw new HttpError(409, `Only finished sessions can be finalised (this one is ${s.status})`, 'bad_state');
   await recomputeSession(tx, sessionId, { force: true });
   await tx.query(`UPDATE sessions SET status = 'final', finalized_at = now(), finalized_by = $2 WHERE id = $1`, [sessionId, actor.userId]);
+  await awardSessionTokens(tx, sessionId);
   await audit(tx, actor, 'session.finalize', 'session', sessionId);
 }
 

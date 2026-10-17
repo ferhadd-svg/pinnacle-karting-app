@@ -127,3 +127,21 @@ describe('backfilling', () => {
     expect(await lapTimes(w, later.id, later.participants['06'].participantId)).toEqual(['1:00.000']);
   });
 });
+
+describe('backfilling out of order', () => {
+  it('fits a session between two existing ones on the same kart', async () => {
+    const api = client(w);
+    const run = async (name: string, start: string, laps: string[], finish: string) => {
+      const s = await startedSession(w, { '07': name }, start);
+      await sendEvents(w, laps.map((clock) => ({ transponder: 'T107', clock })));
+      await api.post(`/v1/sessions/${s.id}/finish`, { at: at(finish) });
+      return s;
+    };
+    const late = await run('Late', '13:00:00.000', ['13:00:10.000', '13:01:10.000'], '13:01:30.000');
+    const early = await run('Early', '12:00:00.000', ['12:00:10.000', '12:01:11.000'], '12:01:30.000');
+    const middle = await run('Middle', '12:30:00.000', ['12:30:10.000', '12:31:12.000'], '12:31:30.000');
+    expect(await lapTimes(w, early.id, early.participants['07'].participantId)).toEqual(['1:01.000']);
+    expect(await lapTimes(w, middle.id, middle.participants['07'].participantId)).toEqual(['1:02.000']);
+    expect(await lapTimes(w, late.id, late.participants['07'].participantId)).toEqual(['1:00.000']);
+  });
+});

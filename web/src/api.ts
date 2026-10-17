@@ -87,7 +87,7 @@ export interface SessionDetail extends Omit<SessionSummary, 'venueName'> {
 export interface LeaderboardEntry {
   participantId: string;
   position: number | null;
-  driver: { id: string; name: string } | null;
+  driver: { id: string; name: string; isMember: boolean } | null;
   teamName: string | null;
   karts: string | null;
   lapsCompleted: number;
@@ -115,7 +115,7 @@ export interface Me {
   email: string;
   role: 'driver' | 'operator' | 'admin';
   venueId: string | null;
-  driver: { id: string; name: string; showOnLeaderboards: boolean } | null;
+  driver: { id: string; name: string; showOnLeaderboards: boolean; memberCode: string } | null;
 }
 export interface DriverSession {
   session: { id: string; name: string; type: SessionType; startedAt: string; resultStatus: ResultStatus };
@@ -206,7 +206,19 @@ export const api = {
   karts: (venueId: string) => request<{ karts: Kart[] }>('GET', `/karts${qs({ venueId })}`).then((r) => r.karts),
   devices: (venueId: string) => request<{ devices: Device[] }>('GET', `/devices${qs({ venueId })}`).then((r) => r.devices),
   createSession: (b: { trackId: string; type: SessionType; name: string }) => request<{ id: string }>('POST', '/sessions', b),
-  addParticipant: (sessionId: string, b: { kartId: string; driverName?: string; teamName?: string }) =>
+  driverByCode: (code: string, venueId?: string) =>
+    request<{ id: string; name: string; waiver?: { valid: boolean; expiresAt: string | null } }>(
+      'GET',
+      `/drivers/by-code/${encodeURIComponent(code)}${venueId ? `?venueId=${venueId}` : ''}`,
+    ),
+  products: (venueId: string) =>
+    request<{ products: { id: string; name: string; priceSen: number }[] }>('GET', `/venues/${venueId}/products`).then((r) => r.products),
+  issueTickets: (productId: string, quantity: number) => request<{ tickets: { id: string; code: string }[] }>('POST', '/tickets/issue', { productId, quantity }),
+  useTicket: (code: string) => request<{ productName: string; code: string; status: string }>('POST', '/tickets/use', { code }),
+  fulfilVoucher: (code: string) => request('POST', '/reward-redemptions/fulfil', { code }),
+  linkWalkIn: (walkInDriverId: string, memberCode: string, reason: string) =>
+    request<{ member: { id: string; name: string }; entries: number; laps: number }>('POST', `/drivers/${walkInDriverId}/link`, { memberCode, reason }),
+  addParticipant: (sessionId: string, b: { kartId: string; memberCode?: string; driverName?: string; teamName?: string }) =>
     request('POST', `/sessions/${sessionId}/participants`, b),
   lifecycle: (sessionId: string, action: 'start' | 'finish' | 'finalize' | 'recalculate') => request('POST', `/sessions/${sessionId}/${action}`, {}),
   reopen: (sessionId: string, reason: string) => request('POST', `/sessions/${sessionId}/reopen`, { reason }),
@@ -243,3 +255,4 @@ export const typeLabel: Record<SessionType, string> = {
 
 export const formatDateTime = (iso: string | null, timeZone?: string) =>
   iso ? new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short', timeZone }) : '—';
+

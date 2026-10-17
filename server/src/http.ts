@@ -7,6 +7,7 @@ import type { Realtime } from './realtime.js';
 export interface AppContext {
   db: Db;
   realtime: Realtime | null;
+  paymentsProvider: 'demo' | 'none';
   issueToken: (u: { userId: string; role: 'driver' | 'operator' | 'admin'; venueId: string | null; driverId: string | null }) => Promise<string>;
 }
 

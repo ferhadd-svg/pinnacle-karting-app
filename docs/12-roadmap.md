@@ -31,13 +31,15 @@ Prerequisite: answers to the [vendor questionnaire](02-hardware-integration.md#v
 - Login rate limiting, refresh tokens
 - **Shadow run:** a week alongside the existing system; every lap compared
 
-## Phase 3: Driver app in the stores (≈ 8–12 pw)
+## Phase 3: Driver app in the stores (≈ 8–12 pw) — largely built
 
-- React Native (Expo) apps sharing the API client; venue picker
-- Push notifications: results final, new PB, track record, booking reminders
-- Link walk-in driver profiles to accounts (QR code on the receipt, or a kiosk)
-- Driver and kart comparisons; announcements and race events
-- Pit-lane tablet UI for endurance driver changes; optional RFID driver-ID adapter
+Built (see [13-customer-app.md](13-customer-app.md)): Expo iOS/Android app, member QR check-in and account linking,
+waivers, tickets (buy/redeem/transfer), rewards, friends, comparisons, progress. Remaining:
+
+- Store release: real icon/splash/screenshots, EAS builds, App Store and Play Store listings
+- Push notifications: results final, new PB, ticket received, booking reminders
+- Venue picker for multi-venue operators; announcements and race events
+- Camera scanning in the staff console; pit-lane tablet UI for endurance driver changes; optional RFID driver-ID adapter
 - Materialised leaderboards; data deletion/anonymisation flow (PDPA)
 
 ## Phase 4: Bookings & payments (optional, ≈ 6–10 pw)

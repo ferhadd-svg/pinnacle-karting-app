@@ -30,7 +30,7 @@ export function Admin() {
   const { me, loading, logout } = useAuth();
   const venues = useAsync(() => api.venues(), []);
   const [venueId, setVenueId] = useState('');
-  const [tab, setTab] = useState<'sessions' | 'hardware'>('sessions');
+  const [tab, setTab] = useState<'sessions' | 'desk' | 'hardware'>('sessions');
 
   useEffect(() => {
     if (!venueId && venues.data?.length) setVenueId(me?.venueId ?? venues.data[0].id);
@@ -75,12 +75,17 @@ export function Admin() {
         <button className={`chip ${tab === 'sessions' ? 'active' : ''}`} onClick={() => setTab('sessions')}>
           Sessions
         </button>
+        <button className={`chip ${tab === 'desk' ? 'active' : ''}`} onClick={() => setTab('desk')}>
+          Front desk
+        </button>
         <button className={`chip ${tab === 'hardware' ? 'active' : ''}`} onClick={() => setTab('hardware')}>
           Karts & devices
         </button>
       </div>
       {venues.error && <ErrorNote error={venues.error} onRetry={venues.reload} />}
-      {venue && (tab === 'sessions' ? <Sessions venue={venue} /> : <Hardware venueId={venue.id} />)}
+      {venue && tab === 'sessions' && <Sessions venue={venue} />}
+      {venue && tab === 'desk' && <FrontDesk venueId={venue.id} />}
+      {venue && tab === 'hardware' && <Hardware venueId={venue.id} />}
     </div>
   );
 }
@@ -166,7 +171,8 @@ function SessionAdmin({ id, venue, onBack }: { id: string; venue: Venue; onBack:
   const anomalies = useAsync(() => api.anomalies(id), [id]);
   const karts = useAsync(() => api.karts(venue.id), [venue.id]);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
-  const [entry, setEntry] = useState({ kartId: '', driverName: '', teamName: '' });
+  const [entry, setEntry] = useState({ kartId: '', memberCode: '', driverName: '', teamName: '' });
+  const member = useMemberLookup(entry.memberCode, venue.id);
   const [csv, setCsv] = useState('');
   const [fromFile, setFromFile] = useState(true);
   const [importDate, setImportDate] = useState(localDate(venue.timezone, new Date()));
@@ -283,6 +289,23 @@ function SessionAdmin({ id, venue, onBack }: { id: string; venue: Venue; onBack:
                 <td>
                   {e.teamName ?? e.driver?.name}
                   {e.teamName && e.driver && <span className="muted small"> ({e.driver.name})</span>}
+                  {e.driver && e.driver.isMember === false && !e.teamName && (
+                    <button
+                      className="link-btn small"
+                      style={{ marginLeft: 8 }}
+                      onClick={() => {
+                        const code = prompt(`Link ${e.driver!.name}'s results to an app member. Member code:`);
+                        const reason = code && prompt('Reason (audit log):', 'Customer showed receipt at the desk');
+                        if (code && reason)
+                          void act('Linked', async () => {
+                            const r = await api.linkWalkIn(e.driver!.id, code, reason);
+                            return `Moved ${r.entries} session(s) and ${r.laps} laps to ${r.member.name}`;
+                          });
+                      }}
+                    >
+                      Link to member
+                    </button>
+                  )}
                 </td>
                 <td className="num">{e.lapsCompleted}</td>
                 <td className={`num ${e.hasFastestLap ? 'purple' : ''}`}>{e.bestLap?.display ?? '—'}</td>
@@ -298,8 +321,13 @@ function SessionAdmin({ id, venue, onBack }: { id: string; venue: Venue; onBack:
           onSubmit={(ev) => {
             ev.preventDefault();
             void act('Entry added', () =>
-              api.addParticipant(id, { kartId: entry.kartId, driverName: entry.driverName || undefined, teamName: entry.teamName || undefined }),
-            ).then(() => setEntry({ kartId: '', driverName: '', teamName: '' }));
+              api.addParticipant(id, {
+                kartId: entry.kartId,
+                memberCode: entry.memberCode.trim() || undefined,
+                driverName: entry.memberCode.trim() ? undefined : entry.driverName || undefined,
+                teamName: entry.teamName || undefined,
+              }),
+            ).then(() => setEntry({ kartId: '', memberCode: '', driverName: '', teamName: '' }));
           }}
         >
           <h3>Assign a driver to a kart</h3>
@@ -318,8 +346,18 @@ function SessionAdmin({ id, venue, onBack }: { id: string; venue: Venue; onBack:
               </select>
             </label>
             <label>
-              Driver name
-              <input value={entry.driverName} onChange={(e) => setEntry({ ...entry, driverName: e.target.value })} />
+              Member code (app)
+              <input
+                value={entry.memberCode}
+                onChange={(e) => setEntry({ ...entry, memberCode: e.target.value })}
+                placeholder="e.g. 5RN VD4"
+                autoCapitalize="characters"
+              />
+              <MemberStatus lookup={member} />
+            </label>
+            <label>
+              or walk-in name
+              <input value={entry.driverName} disabled={!!entry.memberCode.trim()} onChange={(e) => setEntry({ ...entry, driverName: e.target.value })} />
             </label>
             {session.type === 'endurance' && (
               <label>
@@ -328,7 +366,7 @@ function SessionAdmin({ id, venue, onBack }: { id: string; venue: Venue; onBack:
               </label>
             )}
           </div>
-          <button className="btn" disabled={!entry.kartId || (!entry.driverName && !entry.teamName)}>
+          <button className="btn" disabled={!entry.kartId || (!member.data && !entry.driverName && !entry.teamName)}>
             Add entry
           </button>
         </form>
@@ -511,6 +549,151 @@ function CorrectionForm(props: { sessionId: string; entries: { id: string; name:
       </label>
       <button className="btn">Apply</button>
     </form>
+  );
+}
+
+/** Look a member up by code as it's typed (6+ characters), including waiver status at this venue. */
+function useMemberLookup(code: string, venueId: string) {
+  const [state, setState] = useState<{ data: Awaited<ReturnType<typeof api.driverByCode>> | null; error: string | null }>({ data: null, error: null });
+  useEffect(() => {
+    const c = code.replace(/[^a-z0-9]/gi, '');
+    if (c.length < 6) {
+      setState({ data: null, error: null });
+      return;
+    }
+    let live = true;
+    api
+      .driverByCode(c, venueId)
+      .then((d) => live && setState({ data: d, error: null }))
+      .catch((e) => live && setState({ data: null, error: (e as Error).message }));
+    return () => {
+      live = false;
+    };
+  }, [code, venueId]);
+  return state;
+}
+
+function MemberStatus({ lookup }: { lookup: ReturnType<typeof useMemberLookup> }) {
+  if (lookup.error) return <span className="error-text small">{lookup.error}</span>;
+  if (!lookup.data) return null;
+  return (
+    <span className="small">
+      <span className="ok-text">✓ {lookup.data.name}</span>
+      {lookup.data.waiver && (lookup.data.waiver.valid ? <span className="muted"> · waiver signed</span> : <span className="error-text"> · ⚠ waiver not signed</span>)}
+    </span>
+  );
+}
+
+/** Counter tools for the customer app: member check, ticket scan, voucher hand-over, kiosk tickets. */
+function FrontDesk({ venueId }: { venueId: string }) {
+  const [memberCode, setMemberCode] = useState('');
+  const member = useMemberLookup(memberCode, venueId);
+  const [ticketCode, setTicketCode] = useState('');
+  const [voucherCode, setVoucherCode] = useState('');
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const products = useAsync(() => api.products(venueId), [venueId]);
+  const [issue, setIssue] = useState({ productId: '', quantity: 1 });
+  const [issued, setIssued] = useState<string[]>([]);
+
+  const run = async (fn: () => Promise<string>) => {
+    try {
+      setMsg({ ok: true, text: await fn() });
+    } catch (e) {
+      setMsg({ ok: false, text: (e as Error).message });
+    }
+  };
+
+  return (
+    <>
+      {msg && <p className={msg.ok ? 'ok-text' : 'error-text'}>{msg.text}</p>}
+      <div className="card form">
+        <h3>Check a member</h3>
+        <label>
+          Member code (scan the app's QR or type it)
+          <input value={memberCode} onChange={(e) => setMemberCode(e.target.value.replace(/^PKMEMBER:/i, ''))} placeholder="e.g. 5RN VD4" />
+        </label>
+        <MemberStatus lookup={member} />
+      </div>
+      <form
+        className="card form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void run(async () => {
+            const t = await api.useTicket(ticketCode.replace(/^PKTICKET:/i, ''));
+            setTicketCode('');
+            return `✓ Ticket accepted: ${t.productName} (${t.code})`;
+          });
+        }}
+      >
+        <h3>Scan a ticket</h3>
+        <label>
+          Ticket code
+          <input value={ticketCode} onChange={(e) => setTicketCode(e.target.value)} placeholder="e.g. 2K7Z QMFD" />
+        </label>
+        <button className="btn btn-primary" disabled={ticketCode.trim().length < 6}>
+          Accept ticket
+        </button>
+      </form>
+      <form
+        className="card form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void run(async () => {
+            await api.fulfilVoucher(voucherCode);
+            setVoucherCode('');
+            return '✓ Reward handed over';
+          });
+        }}
+      >
+        <h3>Hand over a reward</h3>
+        <label>
+          Voucher code (Rewards tab in the app)
+          <input value={voucherCode} onChange={(e) => setVoucherCode(e.target.value)} placeholder="e.g. WKKW 5PVC" />
+        </label>
+        <button className="btn" disabled={voucherCode.trim().length < 6}>
+          Mark collected
+        </button>
+      </form>
+      <form
+        className="card form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void run(async () => {
+            const r = await api.issueTickets(issue.productId, issue.quantity);
+            setIssued(r.tickets.map((t) => t.code));
+            return `Issued ${r.tickets.length} ticket(s). Print or hand the codes to the customer.`;
+          });
+        }}
+      >
+        <h3>Sell at the counter</h3>
+        <p className="muted small">Issues ticket codes the customer can add to their app wallet. Take payment at the till as usual.</p>
+        <div className="form-row">
+          <label>
+            Product
+            <select required value={issue.productId} onChange={(e) => setIssue({ ...issue, productId: e.target.value })}>
+              <option value="">Choose…</option>
+              {products.data?.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} · RM {(p.priceSen / 100).toFixed(2)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Quantity
+            <input type="number" min={1} max={50} value={issue.quantity} onChange={(e) => setIssue({ ...issue, quantity: Number(e.target.value) })} />
+          </label>
+        </div>
+        <button className="btn" disabled={!issue.productId}>
+          Issue tickets
+        </button>
+        {issued.length > 0 && (
+          <p className="ref">
+            {issued.map((c) => `${c.slice(0, 4)} ${c.slice(4)}`).join('   ')}
+          </p>
+        )}
+      </form>
+    </>
   );
 }
 

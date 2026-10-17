@@ -8,7 +8,7 @@ const db = createPool(config.databaseUrl);
 await migrate(db, (m) => console.log(m));
 const realtime = new Realtime(config.databaseUrl);
 await realtime.start();
-const app = await buildApp({ db, jwtSecret: config.jwtSecret, realtime, corsOrigins: config.corsOrigins, logLevel: config.logLevel });
+const app = await buildApp({ db, jwtSecret: config.jwtSecret, realtime, corsOrigins: config.corsOrigins, logLevel: config.logLevel, paymentsProvider: config.paymentsProvider });
 
 const shutdown = async () => {
   await app.close();

@@ -13,5 +13,10 @@ export const config = {
   // Production must provide a long random secret; the dev default is deliberately obvious.
   jwtSecret: required('JWT_SECRET', isProd ? undefined : 'dev-only-insecure-jwt-secret-change-me'),
   corsOrigins: (process.env.CORS_ORIGINS ?? 'http://localhost:5173').split(',').map((s) => s.trim()),
+  /**
+   * Payment provider for in-app ticket purchases. 'demo' confirms payments without charging anyone and is
+   * refused in production; 'none' disables in-app purchase. Real gateways (e.g. Billplz, iPay88) plug in here.
+   */
+  paymentsProvider: (process.env.PAYMENTS_PROVIDER ?? (isProd ? 'none' : 'demo')) as 'demo' | 'none',
   logLevel: process.env.LOG_LEVEL ?? (isProd ? 'info' : 'warn'),
 };

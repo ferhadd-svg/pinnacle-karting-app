@@ -4,6 +4,8 @@ import { hashPassword, newDeviceKey, requireStaffForVenue, requireUser, type Pri
 import { HttpError, many, one, withTx, type Queryable } from '../db.js';
 import { isoDate, parse, params, uuid, type AppContext } from '../http.js';
 import { audit } from '../services/audit.js';
+import { waiverStatus } from '../services/customer.js';
+import { driverByMemberCode } from '../services/members.js';
 import { ingestPassings } from '../services/ingest.js';
 import { computeSession, recomputeSession, SESSION_COLUMNS, type SessionRow } from '../services/processing.js';
 import { sessionLaps, sessionLeaderboard } from '../services/queries.js';
@@ -12,6 +14,7 @@ import {
   addParticipant,
   cancelSession,
   changeKart,
+  linkWalkInToMember,
   createSession,
   finalizeSession,
   finishSession,
@@ -234,6 +237,23 @@ export function adminRoutes(app: FastifyInstance, ctx: AppContext) {
     return d;
   });
 
+  /** Look up a member by the code on their card (check-in). */
+  app.get('/drivers/by-code/:code', async (req) => {
+    requireUser(req.principal, 'operator', 'admin');
+    const { code } = parse(z.object({ code: z.string().min(4).max(12) }), req.params);
+    const q = parse(z.object({ venueId: uuid.optional() }), req.query);
+    const driver = await driverByMemberCode(db, code);
+    // At check-in staff also need to know whether the driver's waiver is valid for this venue.
+    return q.venueId ? { ...driver, waiver: await waiverStatus(db, driver.id, q.venueId) } : driver;
+  });
+
+  app.post('/drivers/:id/link', async (req) => {
+    const u = requireUser(req.principal, 'operator', 'admin');
+    const id = params(req);
+    const b = parse(z.object({ memberCode: z.string().min(4).max(12), reason: z.string().trim().min(3).max(500) }), req.body);
+    return withTx(db, (t) => linkWalkInToMember(t, u, id, b.memberCode, b.reason));
+  });
+
   app.get('/drivers', async (req) => {
     requireUser(req.principal, 'operator', 'admin');
     const q = parse(z.object({ q: z.string().min(1) }), req.query);
@@ -292,7 +312,13 @@ export function adminRoutes(app: FastifyInstance, ctx: AppContext) {
     const id = params(req);
     const u = await staffFor(req.principal, venueOf.session(db, id));
     const b = parse(
-      z.object({ kartId: uuid, driverId: uuid.optional(), driverName: z.string().trim().min(1).max(60).optional(), teamName: z.string().trim().min(1).max(60).optional() }),
+      z.object({
+        kartId: uuid,
+        driverId: uuid.optional(),
+        memberCode: z.string().trim().min(4).max(12).optional(),
+        driverName: z.string().trim().min(1).max(60).optional(),
+        teamName: z.string().trim().min(1).max(60).optional(),
+      }),
       req.body,
     );
     const r = await withTx(db, (t) => addParticipant(t, u, id, b));
