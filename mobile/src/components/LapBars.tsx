@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import type { Lap } from '../lib/api';
-import { colors, mono } from '../lib/theme';
+import { colors, mono, weight } from '../lib/theme';
 
 /** Lap-by-lap bars: best valid lap in purple, laps not counted for best times marked. */
 export function LapBars({ laps }: { laps: Lap[] }) {
@@ -32,7 +32,7 @@ export function LapBars({ laps }: { laps: Lap[] }) {
                 ]}
               />
             </View>
-            <Text style={[styles.value, isBest && { color: colors.purple, fontWeight: '700' }]}>{l.lapTime.display}</Text>
+            <Text style={[styles.value, isBest && { color: colors.purple, fontWeight: weight.regular }]}>{l.lapTime.display}</Text>
             <Text style={styles.tag}>{tag ?? ''}</Text>
           </View>
         );
@@ -48,6 +48,6 @@ const styles = StyleSheet.create({
   track: { flex: 1, height: 10, borderRadius: 5, backgroundColor: colors.surface2, overflow: 'hidden' },
   bar: { height: '100%', borderRadius: 5, backgroundColor: colors.muted },
   value: { color: colors.text, width: 70, textAlign: 'right', fontSize: 13, ...mono },
-  tag: { color: colors.amber, width: 40, fontSize: 10, fontWeight: '700' },
+  tag: { color: colors.amber, width: 40, fontSize: 10, fontWeight: weight.regular },
   legend: { color: colors.muted, fontSize: 11, marginTop: 4 },
 });

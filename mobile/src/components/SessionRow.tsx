@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import type { SessionSummary } from '../lib/api';
 import { formatDateTime, typeLabel } from '../lib/format';
-import { colors } from '../lib/theme';
+import { colors, weight } from '../lib/theme';
 import { Icon } from './Icon';
 import { Card, Muted, StatusBadge } from './ui';
 
@@ -30,5 +30,5 @@ export function SessionRow({ s }: { s: SessionSummary }) {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  title: { color: colors.text, fontSize: 16, fontWeight: '700' },
+  title: { color: colors.text, fontSize: 16, fontWeight: weight.light },
 });

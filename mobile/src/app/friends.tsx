@@ -5,7 +5,7 @@ import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { formatMemberCode } from '../lib/format';
 import { useAsync } from '../lib/hooks';
-import { colors, radius } from '../lib/theme';
+import { colors, radius, weight } from '../lib/theme';
 
 export default function Friends() {
   const { me } = useAuth();
@@ -106,7 +106,7 @@ export default function Friends() {
 }
 
 const styles = StyleSheet.create({
-  title: { color: colors.text, fontSize: 16, fontWeight: '700' },
+  title: { color: colors.text, fontSize: 16, fontWeight: weight.light },
   addRow: { flexDirection: 'row', gap: 10, alignItems: 'center' },
   friendRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   input: { flex: 1, backgroundColor: colors.bg, borderColor: colors.border, borderWidth: 1, borderRadius: radius.md, color: colors.text, fontSize: 17, letterSpacing: 2, paddingHorizontal: 14, minHeight: 48 },

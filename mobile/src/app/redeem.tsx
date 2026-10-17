@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { StyleSheet, Text, TextInput } from 'react-native';
 import { Button, Card, Muted, Screen } from '../components/ui';
 import { api } from '../lib/api';
-import { colors, radius } from '../lib/theme';
+import { colors, radius, weight } from '../lib/theme';
 
 /** Add a kiosk/counter ticket to the wallet with the code on the receipt. */
 export default function Redeem() {
@@ -49,6 +49,6 @@ export default function Redeem() {
 }
 
 const styles = StyleSheet.create({
-  title: { color: colors.text, fontSize: 17, fontWeight: '700' },
+  title: { color: colors.text, fontSize: 17, fontWeight: weight.light },
   input: { backgroundColor: colors.bg, borderColor: colors.border, borderWidth: 1, borderRadius: radius.md, color: colors.text, fontSize: 20, letterSpacing: 3, paddingHorizontal: 14, minHeight: 54 },
 });

@@ -3,7 +3,7 @@ import { Card, Empty, ErrorBox, Loading, Muted, Screen } from '../components/ui'
 import { api, formatRM } from '../lib/api';
 import { formatDateTime } from '../lib/format';
 import { useAsync } from '../lib/hooks';
-import { colors } from '../lib/theme';
+import { colors, weight } from '../lib/theme';
 
 export default function Receipts() {
   const orders = useAsync(() => api.myOrders(), []);
@@ -42,8 +42,8 @@ export default function Receipts() {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  title: { color: colors.text, fontSize: 16, fontWeight: '700' },
-  status: { fontSize: 12, fontWeight: '800' },
+  title: { color: colors.text, fontSize: 16, fontWeight: weight.light },
+  status: { fontSize: 12, fontWeight: weight.regular },
   line: { color: colors.text, fontSize: 14 },
   totalRow: { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 8 },
 });

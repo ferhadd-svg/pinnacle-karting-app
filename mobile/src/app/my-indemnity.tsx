@@ -4,7 +4,7 @@ import { Button, Card, Empty, ErrorBox, Loading, Muted, Screen } from '../compon
 import { api } from '../lib/api';
 import { formatDate } from '../lib/format';
 import { useAsync } from '../lib/hooks';
-import { colors } from '../lib/theme';
+import { colors, weight } from '../lib/theme';
 
 /** Every waiver you've signed, newest first. Signed copies are never edited. */
 export default function MyIndemnity() {
@@ -40,6 +40,6 @@ export default function MyIndemnity() {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  title: { color: colors.text, fontSize: 16, fontWeight: '700' },
-  status: { fontSize: 12, fontWeight: '800', letterSpacing: 0.5 },
+  title: { color: colors.text, fontSize: 16, fontWeight: weight.light },
+  status: { fontSize: 12, fontWeight: weight.regular, letterSpacing: 0.5 },
 });

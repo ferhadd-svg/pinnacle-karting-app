@@ -6,7 +6,7 @@ import { Button, Card, Loading, Muted, Screen } from '../../components/ui';
 import { api } from '../../lib/api';
 import { formatDate, formatTicketCode, typeLabel } from '../../lib/format';
 import { useAsync } from '../../lib/hooks';
-import { colors, radius } from '../../lib/theme';
+import { colors, radius, weight } from '../../lib/theme';
 
 /** A ticket pass: big QR/code for check-in, plus transfer to another member. */
 export default function TicketScreen() {
@@ -85,12 +85,12 @@ export default function TicketScreen() {
 
 const styles = StyleSheet.create({
   pass: { backgroundColor: colors.surface, borderRadius: 20, borderWidth: 1, borderColor: colors.accent, padding: 24, alignItems: 'center', gap: 6 },
-  venue: { color: colors.accent, fontSize: 12, fontWeight: '800', letterSpacing: 1.2 },
-  product: { color: colors.text, fontSize: 24, fontWeight: '800', textAlign: 'center' },
+  venue: { color: colors.accent, fontSize: 12, fontWeight: weight.regular, letterSpacing: 1.2 },
+  product: { color: colors.text, fontSize: 24, fontWeight: weight.thin, textAlign: 'center' },
   qr: { marginTop: 12, borderRadius: 10, overflow: 'hidden' },
-  code: { color: colors.text, fontSize: 30, fontWeight: '800', letterSpacing: 4, marginTop: 8, fontVariant: ['tabular-nums'] },
-  status: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
+  code: { color: colors.text, fontSize: 30, fontWeight: weight.thin, letterSpacing: 4, marginTop: 8, fontVariant: ['tabular-nums'] },
+  status: { fontSize: 13, fontWeight: weight.regular, letterSpacing: 0.5 },
   sessions: { color: colors.text, fontSize: 13, letterSpacing: 0.3 },
-  title: { color: colors.text, fontSize: 16, fontWeight: '700' },
+  title: { color: colors.text, fontSize: 16, fontWeight: weight.light },
   input: { backgroundColor: colors.bg, borderColor: colors.border, borderWidth: 1, borderRadius: radius.md, color: colors.text, fontSize: 17, letterSpacing: 2, paddingHorizontal: 14, minHeight: 48 },
 });

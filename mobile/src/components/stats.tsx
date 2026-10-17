@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import type { DriverSession } from '../lib/api';
 import { formatLap } from '../lib/format';
-import { colors, mono } from '../lib/theme';
+import { colors, mono, weight } from '../lib/theme';
 import { LineChart } from './LineChart';
 import { Card, Chips, Muted, SectionTitle } from './ui';
 
@@ -85,9 +85,9 @@ export function KartStats({ sessions }: { sessions: DriverSession[] }) {
 }
 
 const styles = StyleSheet.create({
-  title: { color: colors.text, fontSize: 15, fontWeight: '700' },
-  venue: { color: colors.muted, fontSize: 12, fontWeight: '800', letterSpacing: 1, textTransform: 'uppercase', paddingTop: 10 },
+  title: { color: colors.text, fontSize: 15, fontWeight: weight.light },
+  venue: { color: colors.muted, fontSize: 12, fontWeight: weight.regular, letterSpacing: 1, textTransform: 'uppercase', paddingTop: 10 },
   kartRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
   divider: { borderTopWidth: 1, borderTopColor: colors.border },
-  time: { color: colors.text, fontSize: 16, fontWeight: '700', ...mono },
+  time: { color: colors.text, fontSize: 16, fontWeight: weight.light, ...mono },
 });

@@ -6,7 +6,7 @@ import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { formatDate, formatTicketCode } from '../lib/format';
 import { useAsync } from '../lib/hooks';
-import { colors, mono } from '../lib/theme';
+import { colors, mono, weight } from '../lib/theme';
 
 /** Confirm dialog that also works in the web preview (Alert buttons are native-only). */
 function confirm(title: string, message: string): Promise<boolean> {
@@ -140,14 +140,14 @@ export default function RewardsScreen() {
 
 const styles = StyleSheet.create({
   hero: { backgroundColor: colors.surface, borderColor: colors.accent, borderWidth: 1, borderRadius: 20, padding: 20, alignItems: 'center', gap: 2 },
-  balance: { color: colors.text, fontSize: 56, fontWeight: '900', ...mono },
+  balance: { color: colors.text, fontSize: 56, fontWeight: weight.thin, ...mono },
   unit: { color: colors.muted, fontSize: 14 },
-  title: { color: colors.text, fontSize: 16, fontWeight: '700' },
+  title: { color: colors.text, fontSize: 16, fontWeight: weight.light },
   itemRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  cost: { color: colors.amber, fontWeight: '700', marginTop: 2 },
-  voucher: { color: colors.text, fontSize: 30, fontWeight: '800', letterSpacing: 4, ...mono },
+  cost: { color: colors.amber, fontWeight: weight.regular, marginTop: 2 },
+  voucher: { color: colors.text, fontSize: 30, fontWeight: weight.thin, letterSpacing: 4, ...mono },
   ledgerRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, gap: 12 },
   divider: { borderTopWidth: 1, borderTopColor: colors.border },
   ledgerText: { color: colors.text, fontSize: 14 },
-  delta: { fontSize: 16, fontWeight: '800', ...mono },
+  delta: { fontSize: 16, fontWeight: weight.light, ...mono },
 });

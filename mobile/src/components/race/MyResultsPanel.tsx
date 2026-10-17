@@ -5,7 +5,7 @@ import { api, type DriverSession, type SessionType } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
 import { formatDate, typeLabel } from '../../lib/format';
 import { useAsync } from '../../lib/hooks';
-import { colors } from '../../lib/theme';
+import { colors, weight } from '../../lib/theme';
 import { Button, Card, Chips, Empty, ErrorBox, Loading, Muted, StatusBadge } from '../ui';
 
 type Range = 'all' | '30d' | 'year';
@@ -92,7 +92,7 @@ function HistoryRow({ s }: { s: DriverSession }) {
 }
 
 const styles = StyleSheet.create({
-  title: { color: colors.text, fontSize: 15, fontWeight: '700' },
+  title: { color: colors.text, fontSize: 15, fontWeight: weight.light },
   head: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  position: { color: colors.text, fontSize: 22, fontWeight: '900', width: 44 },
+  position: { color: colors.text, fontSize: 22, fontWeight: weight.thin, width: 44 },
 });

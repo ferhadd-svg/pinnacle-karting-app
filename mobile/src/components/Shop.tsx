@@ -7,7 +7,7 @@ import { api, formatRM } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { typeLabel } from '../lib/format';
 import { useAsync } from '../lib/hooks';
-import { colors, mono, radius } from '../lib/theme';
+import { colors, mono, radius, weight } from '../lib/theme';
 
 /**
  * Buy session tickets at one venue. Payment runs through the server's configured provider.
@@ -168,17 +168,17 @@ export function Shop({ venueId, inTab = false }: { venueId: string; inTab?: bool
 }
 
 const styles = StyleSheet.create({
-  h1: { color: colors.text, fontSize: 24, fontWeight: '800' },
+  h1: { color: colors.text, fontSize: 24, fontWeight: weight.thin },
   venueHead: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.surface, borderWidth: 1, borderRadius: radius.lg, padding: 16 },
   productRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  name: { color: colors.text, fontSize: 17, fontWeight: '700' },
-  price: { color: colors.amber, fontSize: 16, fontWeight: '800', marginTop: 4, ...mono },
+  name: { color: colors.text, fontSize: 17, fontWeight: weight.light },
+  price: { color: colors.amber, fontSize: 16, fontWeight: weight.light, marginTop: 4, ...mono },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   stepBtn: { width: 40, height: 40, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface2 },
-  stepText: { color: colors.text, fontSize: 20, fontWeight: '700' },
-  qty: { color: colors.text, fontSize: 18, fontWeight: '800', minWidth: 22, textAlign: 'center', ...mono },
+  stepText: { color: colors.text, fontSize: 20, fontWeight: weight.light },
+  qty: { color: colors.text, fontSize: 18, fontWeight: weight.light, minWidth: 22, textAlign: 'center', ...mono },
   line: { flexDirection: 'row', justifyContent: 'space-between' },
-  lineText: { color: colors.text, fontSize: 15, fontWeight: '600' },
+  lineText: { color: colors.text, fontSize: 15, fontWeight: weight.light },
   totalLine: { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 8, marginTop: 4 },
-  total: { color: colors.text, fontSize: 18, fontWeight: '800' },
+  total: { color: colors.text, fontSize: 18, fontWeight: weight.light },
 });

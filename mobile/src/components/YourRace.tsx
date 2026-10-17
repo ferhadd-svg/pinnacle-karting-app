@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import type { Lap, LeaderboardEntry, PersonalBest, ResultStatus } from '../lib/api';
 import { formatDelta, formatLap } from '../lib/format';
-import { colors, mono, radius, space } from '../lib/theme';
+import { colors, mono, radius, space, weight } from '../lib/theme';
 import { LapBars } from './LapBars';
 import { LineChart } from './LineChart';
 import { Card, Chips, Eyebrow, Muted, Stat, StatGrid } from './ui';
@@ -150,15 +150,15 @@ function HeadToHead({ you, them, theirName }: { you: Lap[]; them: Lap[]; theirNa
 
 const styles = StyleSheet.create({
   head: { flexDirection: 'row', alignItems: 'flex-start', gap: space.sm },
-  position: { color: colors.text, fontSize: 40, fontWeight: '900', letterSpacing: -1 },
-  of: { color: colors.muted, fontSize: 18, fontWeight: '600' },
+  position: { color: colors.text, fontSize: 40, fontWeight: weight.thin, letterSpacing: -1 },
+  of: { color: colors.muted, fontSize: 18, fontWeight: weight.light },
   pb: { backgroundColor: colors.purple, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 6 },
-  pbText: { color: '#fff', fontWeight: '900', fontSize: 12, letterSpacing: 0.5 },
-  subhead: { color: colors.text, fontWeight: '700', fontSize: 16 },
+  pbText: { color: '#fff', fontWeight: weight.regular, fontSize: 12, letterSpacing: 0.5 },
+  subhead: { color: colors.text, fontWeight: weight.light, fontSize: 16 },
   table: { borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: 'hidden' },
   tr: { flexDirection: 'row', paddingVertical: 8, paddingHorizontal: 10, borderTopWidth: 1, borderTopColor: colors.border },
   th: { borderTopWidth: 0, backgroundColor: colors.surface2 },
-  thText: { color: colors.muted, fontSize: 11, fontWeight: '700', textTransform: 'uppercase' },
+  thText: { color: colors.muted, fontSize: 11, fontWeight: weight.regular, textTransform: 'uppercase' },
   td: { flex: 1, color: colors.text, fontSize: 13, textAlign: 'right', ...mono },
   tdLap: { flex: 0.5, textAlign: 'left', color: colors.muted },
 });

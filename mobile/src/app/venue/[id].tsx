@@ -6,7 +6,7 @@ import { TrackMap } from '../../components/TrackMap';
 import { Button, Eyebrow, Loading, Muted, Screen } from '../../components/ui';
 import { api } from '../../lib/api';
 import { useAsync } from '../../lib/hooks';
-import { colors, radius } from '../../lib/theme';
+import { colors, radius, weight } from '../../lib/theme';
 import { router } from 'expo-router';
 
 /** One venue: header, then its leaderboards (records, periods, classes, friends). */
@@ -35,5 +35,5 @@ export default function VenueScreen() {
 
 const styles = StyleSheet.create({
   head: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.surface, borderWidth: 1, borderRadius: radius.lg, padding: 16 },
-  h1: { color: colors.text, fontSize: 22, fontWeight: '800' },
+  h1: { color: colors.text, fontSize: 22, fontWeight: weight.thin },
 });

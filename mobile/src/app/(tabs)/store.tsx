@@ -6,7 +6,7 @@ import { TrackMap } from '../../components/TrackMap';
 import { ErrorBox, Loading, Screen } from '../../components/ui';
 import { api } from '../../lib/api';
 import { useAsync } from '../../lib/hooks';
-import { colors, radius } from '../../lib/theme';
+import { colors, radius, weight } from '../../lib/theme';
 
 const KIND_LABEL = { indoor: 'INDOOR', outdoor: 'OUTDOOR', hybrid: 'HYBRID', circuit: 'CIRCUIT' } as const;
 
@@ -54,15 +54,15 @@ export default function Store() {
 }
 
 const styles = StyleSheet.create({
-  title: { color: colors.text, fontSize: 20, fontWeight: '600', textAlign: 'center' },
+  title: { color: colors.text, fontSize: 20, fontWeight: weight.light, textAlign: 'center' },
   banner: { borderRadius: 4, paddingVertical: 12, alignItems: 'center', backgroundColor: colors.accent },
-  bannerText: { color: colors.accentText, fontSize: 20, fontWeight: '900', letterSpacing: 2 },
+  bannerText: { color: colors.accentText, fontSize: 20, fontWeight: weight.light, letterSpacing: 2 },
   card: { flexDirection: 'row', borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, overflow: 'hidden', backgroundColor: colors.surface, minHeight: 150 },
   left: { flex: 1.1 },
   brandBlock: { alignItems: 'center', justifyContent: 'center', paddingVertical: 12, gap: 2 },
-  kind: { color: '#0b0d18', fontSize: 11, fontWeight: '900', letterSpacing: 5 },
+  kind: { color: '#0b0d18', fontSize: 11, fontWeight: weight.regular, letterSpacing: 5 },
   nameBlock: { flex: 1, justifyContent: 'center', paddingHorizontal: 14, paddingVertical: 10, gap: 2 },
-  name: { color: colors.text, fontSize: 17, fontWeight: '900', letterSpacing: 0.5 },
+  name: { color: colors.text, fontSize: 17, fontWeight: weight.light, letterSpacing: 0.5 },
   tagline: { color: colors.muted, fontSize: 12 },
   art: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#11152a' },
 });

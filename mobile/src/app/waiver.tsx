@@ -6,7 +6,7 @@ import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { formatDate } from '../lib/format';
 import { useAsync } from '../lib/hooks';
-import { colors, radius } from '../lib/theme';
+import { colors, radius, weight } from '../lib/theme';
 
 /** Read and sign the venue's indemnity waiver. Signing is a deliberate act: name + explicit agreement. */
 export default function WaiverScreen() {
@@ -101,14 +101,14 @@ export default function WaiverScreen() {
 }
 
 const styles = StyleSheet.create({
-  h1: { color: colors.text, fontSize: 24, fontWeight: '800' },
-  title: { color: colors.text, fontSize: 16, fontWeight: '700' },
+  h1: { color: colors.text, fontSize: 24, fontWeight: weight.thin },
+  title: { color: colors.text, fontSize: 16, fontWeight: weight.light },
   body: { color: colors.text, fontSize: 15, lineHeight: 23 },
   label: { color: colors.muted, fontSize: 13 },
   input: { backgroundColor: colors.bg, borderColor: colors.border, borderWidth: 1, borderRadius: radius.md, color: colors.text, fontSize: 16, paddingHorizontal: 14, minHeight: 48 },
   agreeRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 6, minHeight: 44 },
   box: { width: 26, height: 26, borderRadius: 6, borderWidth: 2, borderColor: colors.muted, alignItems: 'center', justifyContent: 'center' },
   boxOn: { backgroundColor: colors.accent, borderColor: colors.accent },
-  tick: { color: '#fff', fontWeight: '900' },
+  tick: { color: '#fff', fontWeight: weight.regular },
   agreeText: { color: colors.text, fontSize: 15, flex: 1 },
 });

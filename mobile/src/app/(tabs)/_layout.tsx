@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router/js-tabs';
 import { Icon, type IconName } from '../../components/Icon';
-import { colors } from '../../lib/theme';
+import { colors, weight } from '../../lib/theme';
 
 const tab = (title: string, icon: IconName) => ({
   title,
@@ -15,7 +15,7 @@ export default function TabsLayout() {
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.muted,
         tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: weight.regular },
       }}
     >
       <Tabs.Screen name="index" options={tab('Home', 'home')} />

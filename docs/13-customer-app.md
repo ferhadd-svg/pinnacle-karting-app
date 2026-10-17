@@ -31,7 +31,7 @@ Sources: [Google Play listing](https://play.google.com/store/apps/details?id=com
 
 ## Screens (layout follows RUD Super App screenshots supplied by the client)
 
-Four tabs: **Home · Store · My Tickets · Me**, dark navy with a salamander-orange accent (`#F25C1F`, set in `mobile/src/lib/theme.ts`). Pinnacle's own name and
+Four tabs: **Home · Store · My Tickets · Me**, dark navy with a salamander-orange accent (`#F25C1F`) and thin type (weights 200–400); both are set in `mobile/src/lib/theme.ts`. Pinnacle's own name and
 peak logo are used; RUD's marks, venue names and photos are not.
 
 | Screen | What it shows | RUD equivalent |

@@ -5,7 +5,7 @@ import { api } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
 import { formatDate } from '../../lib/format';
 import { useAsync } from '../../lib/hooks';
-import { colors, mono, radius } from '../../lib/theme';
+import { colors, mono, radius, weight } from '../../lib/theme';
 import { Button, Chips, Empty, ErrorBox, Loading, Muted, SectionTitle, Stat, StatGrid } from '../ui';
 
 type Period = 'day' | 'week' | 'month' | 'all' | 'friends';
@@ -139,8 +139,8 @@ const styles = StyleSheet.create({
   list: { borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border, minHeight: 56 },
   mine: { backgroundColor: colors.mine },
-  pos: { width: 28, color: colors.text, fontWeight: '800', fontSize: 16, textAlign: 'center' },
-  name: { color: colors.text, fontSize: 15, fontWeight: '600' },
+  pos: { width: 28, color: colors.text, fontWeight: weight.light, fontSize: 16, textAlign: 'center' },
+  name: { color: colors.text, fontSize: 15, fontWeight: weight.light },
   sub: { color: colors.muted, fontSize: 12 },
-  time: { color: colors.text, fontSize: 16, fontWeight: '700', ...mono },
+  time: { color: colors.text, fontSize: 16, fontWeight: weight.light, ...mono },
 });

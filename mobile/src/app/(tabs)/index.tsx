@@ -7,7 +7,7 @@ import { ErrorBox, Loading, Screen, SectionTitle } from '../../components/ui';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
 import { useAsync, usePolling } from '../../lib/hooks';
-import { colors, radius } from '../../lib/theme';
+import { colors, radius, weight } from '../../lib/theme';
 
 export default function Home() {
   const { me } = useAuth();
@@ -60,6 +60,6 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   warn: { borderWidth: 1, borderColor: colors.amber, borderRadius: radius.md, padding: 14, backgroundColor: colors.surface, gap: 2 },
-  warnTitle: { color: colors.amber, fontWeight: '800', fontSize: 15 },
+  warnTitle: { color: colors.amber, fontWeight: weight.light, fontSize: 15 },
   warnSub: { color: colors.muted, fontSize: 13 },
 });

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Platform, StyleSheet, Text, View, type GestureResponderEvent, type LayoutChangeEvent } from 'react-native';
 import Svg, { Circle, Line, Path, Text as SvgText } from 'react-native-svg';
-import { colors, mono } from '../lib/theme';
+import { colors, mono, weight } from '../lib/theme';
 
 export interface Series {
   name: string;
@@ -172,7 +172,7 @@ export function LineChart({ series, formatX, formatY, label, height = 200 }: Pro
                   y={sy(s.points[s.highlight.index].y) - 12}
                   fontSize={11}
                   fontFamily={FONT}
-                  fontWeight="700"
+                  fontWeight={weight.regular}
                   fill={colors.text}
                   textAnchor="middle"
                 >
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   readout: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 10, minHeight: 24, marginBottom: 4 },
   readoutTitle: { color: colors.muted, fontSize: 12 },
   readoutItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  readoutValue: { color: colors.text, fontWeight: '700', fontSize: 14, ...mono },
+  readoutValue: { color: colors.text, fontWeight: weight.regular, fontSize: 14, ...mono },
   hint: { color: colors.muted, fontSize: 12 },
   key: { width: 14, height: 3, borderRadius: 2 },
   legend: { flexDirection: 'row', gap: 16, marginTop: 4 },

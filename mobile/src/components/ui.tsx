@@ -14,7 +14,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ResultStatus } from '../lib/api';
 import { statusLabel } from '../lib/format';
-import { colors, mono, radius, space } from '../lib/theme';
+import { colors, mono, radius, space, weight } from '../lib/theme';
 
 /** Scrollable screen body with pull-to-refresh and safe-area padding. */
 export function Screen({
@@ -202,14 +202,14 @@ export function Empty({ children }: { children: ReactNode }) {
 
 export const styles = StyleSheet.create({
   screen: { padding: space.lg, paddingBottom: 48, gap: space.md },
-  h1: { color: colors.text, fontSize: 28, fontWeight: '800', letterSpacing: -0.5 },
-  section: { color: colors.text, fontSize: 18, fontWeight: '700' },
+  h1: { color: colors.text, fontSize: 28, fontWeight: weight.thin, letterSpacing: -0.5 },
+  section: { color: colors.text, fontSize: 18, fontWeight: weight.light },
   sectionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: space.sm },
-  eyebrow: { fontSize: 12, fontWeight: '800', letterSpacing: 1.2, textTransform: 'uppercase' },
+  eyebrow: { fontSize: 12, fontWeight: weight.regular, letterSpacing: 1.2, textTransform: 'uppercase' },
   muted: { color: colors.muted, fontSize: 14, lineHeight: 20 },
   card: { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: radius.md, padding: space.lg, gap: space.sm },
   cardAccent: { borderColor: colors.accent },
-  cardTitle: { color: colors.text, fontSize: 16, fontWeight: '700' },
+  cardTitle: { color: colors.text, fontSize: 16, fontWeight: weight.light },
   pressed: { opacity: 0.75 },
   statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   stat: {
@@ -223,10 +223,10 @@ export const styles = StyleSheet.create({
     gap: 2,
   },
   statLabel: { color: colors.muted, fontSize: 12 },
-  statValue: { color: colors.text, fontSize: 22, fontWeight: '800', ...mono },
+  statValue: { color: colors.text, fontSize: 22, fontWeight: weight.thin, ...mono },
   statHint: { color: colors.muted, fontSize: 11 },
   badge: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start' },
-  badgeText: { fontSize: 12, fontWeight: '700' },
+  badgeText: { fontSize: 12, fontWeight: weight.regular },
   liveDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.success },
   note: { borderWidth: 1, borderRadius: 12, padding: space.md, backgroundColor: colors.surface },
   noteText: { color: colors.text, fontSize: 13, lineHeight: 19 },
@@ -234,11 +234,11 @@ export const styles = StyleSheet.create({
   button_primary: { backgroundColor: colors.accent, borderColor: colors.accent },
   button_secondary: { backgroundColor: colors.surface2, borderColor: colors.border },
   button_danger: { backgroundColor: colors.surface2, borderColor: colors.border },
-  buttonText: { color: colors.text, fontSize: 16, fontWeight: '700' },
+  buttonText: { color: colors.text, fontSize: 16, fontWeight: weight.light },
   chips: { gap: space.sm, paddingVertical: 2 },
   chip: { borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 8, minHeight: 36, justifyContent: 'center' },
   chipActive: { backgroundColor: colors.accent, borderColor: colors.accent },
-  chipText: { color: colors.text, fontWeight: '600', fontSize: 14 },
+  chipText: { color: colors.text, fontWeight: weight.regular, fontSize: 14 },
   chipTextActive: { color: colors.accentText },
   center: { padding: space.xl, alignItems: 'center' },
 });

@@ -8,7 +8,7 @@ import { api, type Lap, type LeaderboardEntry } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
 import { formatDateTime, isRace, typeLabel } from '../../lib/format';
 import { useAsync, usePolling } from '../../lib/hooks';
-import { colors, mono, radius } from '../../lib/theme';
+import { colors, mono, radius, weight } from '../../lib/theme';
 
 const gapText = (e: LeaderboardEntry) => (!e.gap ? '' : 'laps' in e.gap ? `+${e.gap.laps} lap${e.gap.laps > 1 ? 's' : ''}` : e.gap.display);
 
@@ -109,14 +109,14 @@ export default function SessionScreen() {
 
 const styles = StyleSheet.create({
   head: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },
-  h1: { color: colors.text, fontSize: 24, fontWeight: '800' },
+  h1: { color: colors.text, fontSize: 24, fontWeight: weight.thin },
   table: { borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
   rowWrap: { borderTopWidth: 1, borderTopColor: colors.border },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, backgroundColor: colors.surface, minHeight: 60 },
   mine: { backgroundColor: colors.mine },
-  pos: { width: 30, color: colors.text, fontWeight: '800', fontSize: 18, textAlign: 'center' },
-  name: { color: colors.text, fontSize: 15, fontWeight: '600' },
+  pos: { width: 30, color: colors.text, fontWeight: weight.light, fontSize: 18, textAlign: 'center' },
+  name: { color: colors.text, fontSize: 15, fontWeight: weight.light },
   sub: { color: colors.muted, fontSize: 12 },
-  time: { color: colors.text, fontSize: 16, fontWeight: '700', ...mono },
+  time: { color: colors.text, fontSize: 16, fontWeight: weight.light, ...mono },
   detail: { padding: 12, backgroundColor: colors.bg },
 });

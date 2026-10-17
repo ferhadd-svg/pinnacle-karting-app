@@ -9,7 +9,7 @@ import { api, type Profile } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
 import { formatDate } from '../../lib/format';
 import { useAsync } from '../../lib/hooks';
-import { colors, mono, radius } from '../../lib/theme';
+import { colors, mono, radius, weight } from '../../lib/theme';
 
 function QrButton() {
   return (
@@ -255,36 +255,36 @@ function Row({ label, onPress }: { label: string; onPress: () => void }) {
 
 const styles = StyleSheet.create({
   qrRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 12 },
-  qrText: { color: colors.accent, fontSize: 24, fontWeight: '900' },
+  qrText: { color: colors.accent, fontSize: 24, fontWeight: weight.thin },
   qrCircle: { width: 50, height: 50, borderRadius: 25, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
   header: { flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 4 },
   avatar: { width: 76, height: 76, borderRadius: 38, borderWidth: 2, borderColor: colors.accentSoft, backgroundColor: colors.surface2, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { color: colors.accentSoft, fontSize: 34, fontWeight: '900' },
-  name: { color: colors.text, fontSize: 22, fontWeight: '900' },
+  avatarText: { color: colors.accentSoft, fontSize: 34, fontWeight: weight.thin },
+  name: { color: colors.text, fontSize: 22, fontWeight: weight.thin },
   pill: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 5 },
   pillText: { color: colors.text, fontSize: 14 },
   achievements: { flexDirection: 'row', justifyContent: 'space-around', flexWrap: 'wrap', gap: 8, marginVertical: 6 },
   achievement: { alignItems: 'center', gap: 4, minWidth: 80 },
   trophyRing: { width: 66, height: 66, borderRadius: 33, borderWidth: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: '#24160f' },
-  daily: { color: colors.gold, fontSize: 7, fontWeight: '900', letterSpacing: 0.5 },
-  count: { position: 'absolute', top: -2, right: 4, color: colors.accentText, backgroundColor: colors.accent, fontSize: 11, fontWeight: '800', borderRadius: 8, paddingHorizontal: 5, overflow: 'hidden' },
+  daily: { color: colors.gold, fontSize: 7, fontWeight: weight.regular, letterSpacing: 0.5 },
+  count: { position: 'absolute', top: -2, right: 4, color: colors.accentText, backgroundColor: colors.accent, fontSize: 11, fontWeight: weight.regular, borderRadius: 8, paddingHorizontal: 5, overflow: 'hidden' },
   venueShort: { color: colors.text, fontSize: 13, letterSpacing: 0.5 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   card: { flexBasis: '47%', flexGrow: 1, backgroundColor: '#1a1d2b', borderRadius: radius.lg, borderWidth: 2, padding: 16, gap: 6, minHeight: 130, justifyContent: 'flex-end' },
   cardAccent: { borderColor: colors.accentSoft },
   cardAccentStrong: { borderColor: colors.accent },
-  cardValue: { color: colors.text, fontSize: 28, fontWeight: '900', letterSpacing: 1, ...mono },
+  cardValue: { color: colors.text, fontSize: 28, fontWeight: weight.thin, letterSpacing: 1, ...mono },
   cardLabel: { color: colors.text, fontSize: 15 },
-  unit: { fontSize: 16, fontWeight: '800', letterSpacing: 0 },
-  tierName: { color: colors.text, fontSize: 20, fontWeight: '900', letterSpacing: 2, textAlign: 'center' },
+  unit: { fontSize: 16, fontWeight: weight.light, letterSpacing: 0 },
+  tierName: { color: colors.text, fontSize: 20, fontWeight: weight.light, letterSpacing: 2, textAlign: 'center' },
   progressTrack: { height: 22, borderRadius: 11, backgroundColor: '#f2f4fb', overflow: 'hidden', justifyContent: 'center' },
   progressFill: { position: 'absolute', left: 0, top: 0, bottom: 0, backgroundColor: colors.accentSoft },
-  progressText: { color: '#10142a', fontSize: 11, fontWeight: '600', textAlign: 'center' },
+  progressText: { color: '#10142a', fontSize: 11, fontWeight: weight.regular, textAlign: 'center' },
   tiles: { flexDirection: 'row', gap: 12 },
   tile: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#2a1710', borderRadius: radius.md, padding: 16, minHeight: 72 },
-  tileTitle: { color: colors.text, fontSize: 16, fontWeight: '600' },
+  tileTitle: { color: colors.text, fontSize: 16, fontWeight: weight.light },
   tileSub: { color: colors.muted, fontSize: 13 },
-  section: { color: colors.text, fontSize: 20, fontWeight: '600', marginBottom: 8 },
+  section: { color: colors.text, fontSize: 20, fontWeight: weight.light, marginBottom: 8 },
   history: { flexDirection: 'row', justifyContent: 'space-around' },
   round: { alignItems: 'center', gap: 8, minWidth: 96 },
   roundIcon: { width: 58, height: 58, borderRadius: 29, alignItems: 'center', justifyContent: 'center' },

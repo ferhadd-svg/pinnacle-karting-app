@@ -7,7 +7,7 @@ import { Button, Chips, Empty, ErrorBox, Loading, Screen } from '../../component
 import { api, type Ticket } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
 import { useAsync } from '../../lib/hooks';
-import { colors, radius } from '../../lib/theme';
+import { colors, radius, weight } from '../../lib/theme';
 
 type Filter = 'all' | 'available' | 'used';
 
@@ -106,17 +106,17 @@ function TicketRow({ t, first }: { t: Ticket; first: boolean }) {
 }
 
 const styles = StyleSheet.create({
-  title: { color: colors.text, fontSize: 20, fontWeight: '600', textAlign: 'center' },
+  title: { color: colors.text, fontSize: 20, fontWeight: weight.light, textAlign: 'center' },
   segments: { flexDirection: 'row', borderRadius: 8, overflow: 'hidden', gap: 2 },
   segment: { flex: 1, paddingVertical: 12, alignItems: 'center', backgroundColor: '#090b17', borderWidth: 1, borderColor: colors.border, borderRadius: 6 },
   segmentOn: { backgroundColor: colors.accent, borderColor: colors.accent },
   segmentText: { color: colors.text, fontSize: 17 },
-  segmentTextOn: { color: colors.accentText, fontWeight: '700' },
+  segmentTextOn: { color: colors.accentText, fontWeight: weight.regular },
   actions: { flexDirection: 'row', gap: 10 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 18 },
   divider: { borderTopWidth: 1, borderTopColor: '#3a4a6a' },
   product: { color: colors.text, fontSize: 16, lineHeight: 22, letterSpacing: 0.3 },
   date: { color: colors.text, fontSize: 12 },
-  sessions: { color: colors.accent, fontSize: 13, fontWeight: '600', letterSpacing: 0.3 },
+  sessions: { color: colors.accent, fontSize: 13, fontWeight: weight.regular, letterSpacing: 0.3 },
   status: { color: colors.text, fontSize: 14, width: 72, textAlign: 'right' },
 });

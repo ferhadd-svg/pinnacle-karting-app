@@ -25,6 +25,9 @@ export const colors = {
   series2: '#d95926',
 };
 
+/** Thin type: big numbers and titles use `thin`, body text `light`, small labels `regular` so they stay legible. */
+export const weight = { thin: '200', light: '300', regular: '400', medium: '500' } as const;
+
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24 };
 export const radius = { md: 14, lg: 20, pill: 999 };
 export const mono = { fontVariant: ['tabular-nums' as const] };

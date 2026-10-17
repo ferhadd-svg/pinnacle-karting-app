@@ -3,7 +3,7 @@ import { useState, type ComponentProps } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button, Muted } from '../components/ui';
 import { useAuth } from '../lib/auth';
-import { colors, radius } from '../lib/theme';
+import { colors, radius, weight } from '../lib/theme';
 
 export default function SignIn() {
   const { signIn, register } = useAuth();
@@ -78,7 +78,7 @@ function Field({ label, ...props }: { label: string } & ComponentProps<typeof Te
 
 const styles = StyleSheet.create({
   wrap: { padding: 24, gap: 16 },
-  h1: { color: colors.text, fontSize: 26, fontWeight: '800' },
+  h1: { color: colors.text, fontSize: 26, fontWeight: weight.thin },
   label: { color: colors.muted, fontSize: 13 },
   input: { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: radius.md, color: colors.text, fontSize: 16, paddingHorizontal: 14, minHeight: 50 },
   error: { color: colors.danger, fontSize: 14 },

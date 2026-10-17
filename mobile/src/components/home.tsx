@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 import type { HomeFeed } from '../lib/api';
-import { colors, mono, radius } from '../lib/theme';
+import { colors, mono, radius, weight } from '../lib/theme';
 import { Icon, type IconName } from './Icon';
 import { TrackMap } from './TrackMap';
 import { Trophy, medalColor } from './Trophy';
@@ -97,23 +97,23 @@ export function MonthlyBestCard({ item }: { item: HomeFeed['venues'][number] }) 
 const styles = StyleSheet.create({
   qaPanel: { flexDirection: 'row', backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, paddingVertical: 14 },
   qa: { flex: 1, alignItems: 'center', gap: 8, minHeight: 64, justifyContent: 'center' },
-  qaLabel: { color: colors.text, fontSize: 13, fontWeight: '600' },
+  qaLabel: { color: colors.text, fontSize: 13, fontWeight: weight.regular },
   promo: { flexDirection: 'row', backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, overflow: 'hidden', minHeight: 150 },
   promoStripe: { width: 10 },
-  promoBadge: { fontSize: 26, fontWeight: '900', letterSpacing: 0.5 },
-  promoTitle: { color: colors.text, fontSize: 19, fontWeight: '800' },
+  promoBadge: { fontSize: 26, fontWeight: weight.thin, letterSpacing: 0.5 },
+  promoTitle: { color: colors.text, fontSize: 19, fontWeight: weight.light },
   promoSub: { color: colors.muted, fontSize: 14, lineHeight: 20 },
-  promoVenue: { color: colors.muted, fontSize: 12, fontWeight: '700' },
+  promoVenue: { color: colors.muted, fontSize: 12, fontWeight: weight.regular },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: 10 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.border },
   board: { borderRadius: radius.lg, borderWidth: 1.5, overflow: 'hidden', backgroundColor: colors.bg },
   boardHead: { paddingHorizontal: 16, paddingVertical: 12 },
-  boardTitle: { color: '#0b0d18', fontSize: 17, fontWeight: '900', letterSpacing: 0.5 },
+  boardTitle: { color: '#0b0d18', fontSize: 17, fontWeight: weight.light, letterSpacing: 0.5 },
   boardBody: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
-  monthly: { color: colors.text, fontSize: 13, fontWeight: '900', letterSpacing: 1.5, textAlign: 'center' },
+  monthly: { color: colors.text, fontSize: 13, fontWeight: weight.regular, letterSpacing: 1.5, textAlign: 'center' },
   boardRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   pos: { color: colors.text, width: 12, fontSize: 14 },
   name: { color: colors.text, flex: 1, fontSize: 14 },
-  time: { color: colors.text, fontSize: 14, fontWeight: '600', ...mono },
+  time: { color: colors.text, fontSize: 14, fontWeight: weight.regular, ...mono },
   empty: { color: colors.muted, fontSize: 13, textAlign: 'center' },
 });

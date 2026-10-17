@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import QRCode from 'qrcode';
 import Svg, { Path, Rect } from 'react-native-svg';
 import { formatMemberCode } from '../lib/format';
-import { colors, radius, space } from '../lib/theme';
+import { colors, radius, space, weight } from '../lib/theme';
 
 /** QR drawn from the code's module matrix: one SVG path, crisp at any size, no image files. */
 export function Qr({ value, size }: { value: string; size: number }) {
@@ -24,9 +24,15 @@ export function Qr({ value, size }: { value: string; size: number }) {
 
 /** Digital member card. Staff scan the QR or type the code at check-in so laps land on this account. */
 export function MemberCard({ name, code, large = false }: { name: string; code: string; large?: boolean }) {
+  const qr = (
+    <View style={styles.qr} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <Qr value={`PKMEMBER:${code}`} size={large ? 240 : 96} />
+    </View>
+  );
   return (
     <View style={[styles.card, large && styles.large]}>
-      <View style={[styles.text, large && { alignItems: 'center', flex: 0 }]}>
+      {large && qr}
+      <View style={large ? styles.textLarge : styles.text}>
         <Text style={styles.eyebrow}>PINNACLE KARTING · MEMBER</Text>
         <Text style={styles.name} numberOfLines={1}>
           {name}
@@ -35,9 +41,7 @@ export function MemberCard({ name, code, large = false }: { name: string; code: 
           {formatMemberCode(code)}
         </Text>
       </View>
-      <View style={styles.qr} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        <Qr value={`PKMEMBER:${code}`} size={large ? 240 : 96} />
-      </View>
+      {!large && qr}
     </View>
   );
 }
@@ -53,10 +57,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.accent,
   },
-  large: { flexDirection: 'column-reverse', alignItems: 'center', paddingVertical: space.xl },
+  large: { flexDirection: 'column', alignItems: 'center', paddingVertical: space.xl },
   text: { flex: 1, gap: 4 },
-  eyebrow: { color: colors.accent, fontSize: 11, fontWeight: '800', letterSpacing: 1.2 },
-  name: { color: colors.text, fontSize: 20, fontWeight: '800' },
-  code: { color: colors.text, fontSize: 24, fontWeight: '700', letterSpacing: 3, fontVariant: ['tabular-nums'] },
+  textLarge: { alignItems: 'center', gap: 4 },
+  eyebrow: { color: colors.accent, fontSize: 11, fontWeight: weight.regular, letterSpacing: 1.2 },
+  name: { color: colors.text, fontSize: 20, fontWeight: weight.light },
+  code: { color: colors.text, fontSize: 24, fontWeight: weight.thin, letterSpacing: 3, fontVariant: ['tabular-nums'] },
   qr: { borderRadius: 8, overflow: 'hidden' },
 });

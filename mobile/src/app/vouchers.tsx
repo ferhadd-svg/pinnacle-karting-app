@@ -4,7 +4,7 @@ import { Button, Card, Empty, ErrorBox, Loading, Muted, Screen, SectionTitle } f
 import { api } from '../lib/api';
 import { formatDate, formatTicketCode } from '../lib/format';
 import { useAsync } from '../lib/hooks';
-import { colors, mono } from '../lib/theme';
+import { colors, mono, weight } from '../lib/theme';
 
 export default function Vouchers() {
   const rewards = useAsync(() => api.rewards(), []);
@@ -44,6 +44,6 @@ export default function Vouchers() {
 }
 
 const styles = StyleSheet.create({
-  title: { color: colors.text, fontSize: 16, fontWeight: '700' },
-  code: { color: colors.text, fontSize: 30, fontWeight: '800', letterSpacing: 4, ...mono },
+  title: { color: colors.text, fontSize: 16, fontWeight: weight.light },
+  code: { color: colors.text, fontSize: 30, fontWeight: weight.thin, letterSpacing: 4, ...mono },
 });
