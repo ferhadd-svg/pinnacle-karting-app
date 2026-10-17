@@ -72,7 +72,7 @@ export function adminRoutes(app: FastifyInstance, ctx: AppContext) {
         timezone: z.string().default('Asia/Kuala_Lumpur'),
         shortName: z.string().max(20).optional(),
         kind: z.enum(['indoor', 'outdoor', 'hybrid', 'circuit']).default('indoor'),
-        accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).default('#3ee07f'),
+        accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).default('#F25C1F'),
         tagline: z.string().max(120).default(''),
         sort: z.number().int().default(0),
       }),

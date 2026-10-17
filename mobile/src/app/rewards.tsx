@@ -67,7 +67,7 @@ export default function RewardsScreen() {
             <Muted>• {r.rules.perRm10} point for every RM10 spent in the app</Muted>
           </Card>
 
-          {msg && <Text style={{ color: msg.ok ? colors.you : colors.danger }}>{msg.text}</Text>}
+          {msg && <Text style={{ color: msg.ok ? colors.success : colors.danger }}>{msg.text}</Text>}
 
           {r.redemptions.some((x) => x.status === 'pending') && (
             <>
@@ -124,7 +124,7 @@ export default function RewardsScreen() {
                     </Text>
                     <Muted style={{ fontSize: 12 }}>{formatDate(l.createdAt)}</Muted>
                   </View>
-                  <Text style={[styles.delta, { color: l.delta > 0 ? colors.you : colors.text }]}>
+                  <Text style={[styles.delta, { color: l.delta > 0 ? colors.success : colors.text }]}>
                     {l.delta > 0 ? '+' : '−'}
                     {Math.abs(l.delta)}
                   </Text>

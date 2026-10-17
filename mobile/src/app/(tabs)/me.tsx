@@ -81,9 +81,9 @@ export default function MeScreen() {
 
           <Section title="History">
             <View style={styles.history}>
-              <Round icon="cart" bg="#6a3df0" label="My Purchase" onPress={() => router.push('/receipts')} />
-              <Round icon="star" bg="#1f9b55" label="My Rewards" onPress={() => router.push('/rewards')} />
-              <Round icon="doc" bg="#e2533d" label="My Indemnity" onPress={() => router.push('/my-indemnity')} />
+              <Round icon="cart" bg="#F25C1F" label="My Purchase" onPress={() => router.push('/receipts')} />
+              <Round icon="star" bg="#d9480f" label="My Rewards" onPress={() => router.push('/rewards')} />
+              <Round icon="doc" bg="#b83a10" label="My Indemnity" onPress={() => router.push('/my-indemnity')} />
             </View>
           </Section>
           <Section title="Vouchers">
@@ -108,6 +108,7 @@ export default function MeScreen() {
                   await refresh();
                 }}
                 trackColor={{ true: colors.accent, false: colors.border }}
+                thumbColor={colors.text}
                 accessibilityLabel="Show me on public leaderboards"
               />
             </View>
@@ -134,7 +135,7 @@ function ProfileHeader({ p }: { p: Profile }) {
         </Text>
         <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
           <View style={styles.pill}>
-            <Icon name="speed" color={colors.purple} size={16} />
+            <Icon name="speed" color={colors.accentSoft} size={16} />
             <Text style={styles.pillText}>{p.tier.name}</Text>
           </View>
           <View style={styles.pill}>
@@ -173,8 +174,8 @@ function Achievements({ p }: { p: Profile }) {
 
 function StatCard({ icon, value, label, onPress, dim, tall }: { icon: IconName; value: string; label: string; onPress?: () => void; dim?: boolean; tall?: boolean }) {
   return (
-    <Pressable onPress={onPress} disabled={!onPress} accessibilityRole={onPress ? 'button' : undefined} accessibilityLabel={`${label}: ${value}`} style={[styles.card, styles.cardGreen, dim && { opacity: 0.6 }, tall && { minHeight: 150 }]}>
-      <Icon name={icon} color={colors.lime} size={28} />
+    <Pressable onPress={onPress} disabled={!onPress} accessibilityRole={onPress ? 'button' : undefined} accessibilityLabel={`${label}: ${value}`} style={[styles.card, styles.cardAccent, dim && { opacity: 0.6 }, tall && { minHeight: 150 }]}>
+      <Icon name={icon} color={colors.accentSoft} size={28} />
       <Text style={styles.cardValue} numberOfLines={1} adjustsFontSizeToFit>
         {value}
       </Text>
@@ -189,7 +190,7 @@ function TierCard({ p }: { p: Profile }) {
   const t = p.tier;
   return (
     <View
-      style={[styles.card, styles.cardPurple, { minHeight: 150 }]}
+      style={[styles.card, styles.cardAccentStrong, { minHeight: 150 }]}
       accessible
       accessibilityLabel={`${t.name} tier. Mileage ${p.mileageKm} kilometres.${t.next ? ` ${t.kmToNext} kilometres to ${t.next}.` : ''}`}
     >
@@ -212,7 +213,7 @@ function TierCard({ p }: { p: Profile }) {
 function Tile({ icon, title, sub, onPress, warn }: { icon: IconName; title: string; sub: string; onPress: () => void; warn?: boolean }) {
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${title}, ${sub}`} style={({ pressed }) => [styles.tile, pressed && { opacity: 0.7 }]}>
-      <Icon name={icon} color={colors.lime} size={34} />
+      <Icon name={icon} color={colors.accentSoft} size={34} />
       <View style={{ flex: 1 }}>
         <Text style={styles.tileTitle}>{title}</Text>
         <Text style={[styles.tileSub, warn && { color: colors.amber }]}>{sub}</Text>
@@ -257,30 +258,30 @@ const styles = StyleSheet.create({
   qrText: { color: colors.accent, fontSize: 24, fontWeight: '900' },
   qrCircle: { width: 50, height: 50, borderRadius: 25, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
   header: { flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 4 },
-  avatar: { width: 76, height: 76, borderRadius: 38, borderWidth: 2, borderColor: colors.lime, backgroundColor: colors.surface2, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { color: colors.lime, fontSize: 34, fontWeight: '900' },
+  avatar: { width: 76, height: 76, borderRadius: 38, borderWidth: 2, borderColor: colors.accentSoft, backgroundColor: colors.surface2, alignItems: 'center', justifyContent: 'center' },
+  avatarText: { color: colors.accentSoft, fontSize: 34, fontWeight: '900' },
   name: { color: colors.text, fontSize: 22, fontWeight: '900' },
   pill: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 5 },
   pillText: { color: colors.text, fontSize: 14 },
   achievements: { flexDirection: 'row', justifyContent: 'space-around', flexWrap: 'wrap', gap: 8, marginVertical: 6 },
   achievement: { alignItems: 'center', gap: 4, minWidth: 80 },
-  trophyRing: { width: 66, height: 66, borderRadius: 33, borderWidth: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: '#1b1730' },
+  trophyRing: { width: 66, height: 66, borderRadius: 33, borderWidth: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: '#24160f' },
   daily: { color: colors.gold, fontSize: 7, fontWeight: '900', letterSpacing: 0.5 },
-  count: { position: 'absolute', top: -2, right: 4, color: colors.text, backgroundColor: colors.purple, fontSize: 11, fontWeight: '800', borderRadius: 8, paddingHorizontal: 5, overflow: 'hidden' },
+  count: { position: 'absolute', top: -2, right: 4, color: colors.accentText, backgroundColor: colors.accent, fontSize: 11, fontWeight: '800', borderRadius: 8, paddingHorizontal: 5, overflow: 'hidden' },
   venueShort: { color: colors.text, fontSize: 13, letterSpacing: 0.5 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   card: { flexBasis: '47%', flexGrow: 1, backgroundColor: '#1a1d2b', borderRadius: radius.lg, borderWidth: 2, padding: 16, gap: 6, minHeight: 130, justifyContent: 'flex-end' },
-  cardGreen: { borderColor: colors.lime },
-  cardPurple: { borderColor: colors.purple },
+  cardAccent: { borderColor: colors.accentSoft },
+  cardAccentStrong: { borderColor: colors.accent },
   cardValue: { color: colors.text, fontSize: 28, fontWeight: '900', letterSpacing: 1, ...mono },
   cardLabel: { color: colors.text, fontSize: 15 },
   unit: { fontSize: 16, fontWeight: '800', letterSpacing: 0 },
   tierName: { color: colors.text, fontSize: 20, fontWeight: '900', letterSpacing: 2, textAlign: 'center' },
   progressTrack: { height: 22, borderRadius: 11, backgroundColor: '#f2f4fb', overflow: 'hidden', justifyContent: 'center' },
-  progressFill: { position: 'absolute', left: 0, top: 0, bottom: 0, backgroundColor: '#9ecbff' },
+  progressFill: { position: 'absolute', left: 0, top: 0, bottom: 0, backgroundColor: colors.accentSoft },
   progressText: { color: '#10142a', fontSize: 11, fontWeight: '600', textAlign: 'center' },
   tiles: { flexDirection: 'row', gap: 12 },
-  tile: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#12241f', borderRadius: radius.md, padding: 16, minHeight: 72 },
+  tile: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#2a1710', borderRadius: radius.md, padding: 16, minHeight: 72 },
   tileTitle: { color: colors.text, fontSize: 16, fontWeight: '600' },
   tileSub: { color: colors.muted, fontSize: 13 },
   section: { color: colors.text, fontSize: 20, fontWeight: '600', marginBottom: 8 },

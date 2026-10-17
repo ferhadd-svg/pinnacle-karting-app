@@ -6,12 +6,16 @@ export const colors = {
   border: '#2c3252',
   text: '#f2f4fb',
   muted: '#8f97b3',
-  /** Brand accent (neon green). Text on it uses accentText. */
-  accent: '#3ee07f',
-  accentText: '#04220f',
-  lime: '#d7f56a',
+  /** Brand accent (salamander orange). Text on it uses accentText; white text on it is too low-contrast. */
+  accent: '#F25C1F',
+  accentText: '#1c0800',
+  /** Lighter orange for icons, outlines and track lines on dark surfaces. */
+  accentSoft: '#FF8A50',
+  /** Row tint for "you" on leaderboards. */
+  mine: 'rgba(242,92,31,0.16)',
   amber: '#ffcc00',
-  you: '#3ee07f',
+  /** Confirmations and the live dot stay green so they read as status, not brand. */
+  success: '#3ee07f',
   purple: '#a77bff',
   danger: '#ff6b62',
   gold: '#f5c242',

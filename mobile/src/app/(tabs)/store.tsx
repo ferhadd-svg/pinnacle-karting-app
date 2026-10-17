@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { PeakMark } from '../../components/Brand';
+import { Shop } from '../../components/Shop';
 import { TrackMap } from '../../components/TrackMap';
 import { ErrorBox, Loading, Screen } from '../../components/ui';
 import { api } from '../../lib/api';
@@ -9,9 +10,10 @@ import { colors, radius } from '../../lib/theme';
 
 const KIND_LABEL = { indoor: 'INDOOR', outdoor: 'OUTDOOR', hybrid: 'HYBRID', circuit: 'CIRCUIT' } as const;
 
-/** Store: pick a venue, then buy sessions there. */
+/** Store: with one venue it is that venue's shop; with several, pick a venue first. */
 export default function Store() {
   const venues = useAsync(() => api.venues(), []);
+  if (venues.data?.length === 1) return <Shop venueId={venues.data[0].id} inTab />;
   return (
     <Screen onRefresh={() => venues.reload({ pull: true })} refreshing={venues.refreshing}>
       <Text style={styles.title} accessibilityRole="header">

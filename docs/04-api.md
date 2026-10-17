@@ -124,7 +124,7 @@ lists finalised sessions whose window contains new events: they are stored but n
   "finalizedAt": "2026-10-11T05:02:09.908Z",
   "kartClass": { "id": "8fcf…", "name": "Adult 270cc" },
   "track": { "id": "a06d…", "name": "Main Circuit", "layout": "standard" },
-  "venue": { "id": "57ca…", "name": "Pinnacle Karting KL", "timezone": "Asia/Kuala_Lumpur" },
+  "venue": { "id": "57ca…", "name": "Pinnacle Kart", "timezone": "Asia/Kuala_Lumpur" },
   "participantCount": 8,
   "rules": { "minLapUs": 25000000 },
   "resultsVersion": 4
@@ -202,7 +202,7 @@ In races, `gap` is `{ "laps": 2 }` for lapped entries. `karts` shows swaps as `"
     {
       "session": { "id": "db5a…", "name": "Demo – Arrive & Drive 14:00", "type": "rental", "startedAt": "2026-10-10T06:00:20.500Z", "resultStatus": "final" },
       "track": { "id": "a06d…", "name": "Main Circuit" },
-      "venue": { "id": "57ca…", "name": "Pinnacle Karting KL" },
+      "venue": { "id": "57ca…", "name": "Pinnacle Kart" },
       "position": 1,
       "fieldSize": 8,
       "laps": 10,

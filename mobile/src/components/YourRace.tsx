@@ -137,7 +137,7 @@ function HeadToHead({ you, them, theirName }: { you: Lap[]; them: Lap[]; theirNa
             <Text style={styles.td}>{r.a?.lapTime.display ?? '—'}</Text>
             <Text style={styles.td}>{r.b?.lapTime.display ?? '—'}</Text>
             <Text style={styles.td}>
-              {r.delta !== null && r.delta !== 0 && <Text style={{ color: r.delta < 0 ? colors.you : colors.danger }}>{r.delta < 0 ? '▲ ' : '▼ '}</Text>}
+              {r.delta !== null && r.delta !== 0 && <Text style={{ color: r.delta < 0 ? colors.success : colors.danger }}>{r.delta < 0 ? '▲ ' : '▼ '}</Text>}
               {r.delta === null ? '—' : formatDelta(r.delta)}
             </Text>
           </View>

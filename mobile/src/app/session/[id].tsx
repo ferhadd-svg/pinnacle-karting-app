@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   table: { borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
   rowWrap: { borderTopWidth: 1, borderTopColor: colors.border },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, backgroundColor: colors.surface, minHeight: 60 },
-  mine: { backgroundColor: 'rgba(25,210,122,0.12)' },
+  mine: { backgroundColor: colors.mine },
   pos: { width: 30, color: colors.text, fontWeight: '800', fontSize: 18, textAlign: 'center' },
   name: { color: colors.text, fontSize: 15, fontWeight: '600' },
   sub: { color: colors.muted, fontSize: 12 },

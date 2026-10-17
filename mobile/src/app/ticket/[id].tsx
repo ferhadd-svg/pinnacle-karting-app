@@ -55,7 +55,7 @@ export default function TicketScreen() {
         <Text style={styles.code} accessibilityLabel={`Ticket code ${t.code.split('').join(' ')}`}>
           {formatTicketCode(t.code)}
         </Text>
-        <Text style={[styles.status, { color: active ? colors.you : colors.muted }]}>{active ? 'VALID · show at check-in' : `USED ${formatDate(t.usedAt)}`}</Text>
+        <Text style={[styles.status, { color: active ? colors.success : colors.muted }]}>{active ? 'VALID · show at check-in' : `USED ${formatDate(t.usedAt)}`}</Text>
         <Text style={styles.sessions}>
           SESSION USED: {t.sessionsUsed} / {t.sessionsTotal}
         </Text>
@@ -75,7 +75,7 @@ export default function TicketScreen() {
             accessibilityLabel="Friend's member code"
             style={styles.input}
           />
-          {msg && <Text style={{ color: msg.ok ? colors.you : colors.danger }}>{msg.text}</Text>}
+          {msg && <Text style={{ color: msg.ok ? colors.success : colors.danger }}>{msg.text}</Text>}
           <Button title="Send ticket" variant="secondary" onPress={transfer} disabled={to.trim().length < 6} loading={busy} />
         </Card>
       )}

@@ -31,13 +31,13 @@ Sources: [Google Play listing](https://play.google.com/store/apps/details?id=com
 
 ## Screens (layout follows RUD Super App screenshots supplied by the client)
 
-Four tabs: **Home · Store · My Tickets · Me**, dark navy with a neon-green accent. Pinnacle's own name and
+Four tabs: **Home · Store · My Tickets · Me**, dark navy with a salamander-orange accent (`#F25C1F`, set in `mobile/src/lib/theme.ts`). Pinnacle's own name and
 peak logo are used; RUD's marks, venue names and photos are not.
 
 | Screen | What it shows | RUD equivalent |
 |---|---|---|
 | **Home** | Wordmark; quick actions *Join Race* (store), *Indemnity*, *Rewards*, *Live*; promotions carousel; on-track-now; a **Monthly Best** card per venue (venue colour, drawn track outline, top 3 with trophies) → venue leaderboard | Home |
-| **Store** | *Select Track*: a card per venue with its colour, format (Indoor / Circuit / Hybrid / Outdoor) and track outline → venue store with products and checkout | Store → Driver Selection |
+| **Store** | Pinnacle Kart has one venue, so the tab opens its store directly (products, quantity, checkout). If more venues are ever added it becomes *Select Track*: a card per venue with its colour, format and track outline | Store → Driver Selection |
 | **My Tickets** | All / Available / Used, venue filter, each ticket with purchase time and **SESSION USED x / y** (multi-session packs); ticket pass with QR; buy; redeem kiosk code | My Tickets |
 | **Me** | *My QR*; avatar, name, tier and member badges; **Daily Top 3** trophy per venue; Points, Tickets ready, tier card with **mileage (km) and distance to next tier**, current kart; Sign Indemnity, My Racing; History (My Purchase, My Rewards, My Indemnity); My Vouchers; Friends; Password; privacy; sign out | Me |
 | Venue | Header, buy button, track records, this month / week / today / all time / friends boards, kart classes | (monthly-best detail) |

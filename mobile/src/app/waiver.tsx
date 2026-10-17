@@ -65,8 +65,8 @@ export default function WaiverScreen() {
         {venues.data?.find((v) => v.id === venueId)?.name} · version {tpl.data.version} · valid for {tpl.data.validDays} days
       </Muted>
       {current?.valid && (
-        <Card style={{ borderColor: colors.you }}>
-          <Text style={[styles.title, { color: colors.you }]}>✓ Signed</Text>
+        <Card style={{ borderColor: colors.success }}>
+          <Text style={[styles.title, { color: colors.success }]}>✓ Signed</Text>
           <Muted>
             Signed {formatDate(current.signedAt)} · valid until {formatDate(current.expiresAt)}
           </Muted>

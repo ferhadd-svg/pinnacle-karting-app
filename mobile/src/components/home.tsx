@@ -12,7 +12,7 @@ export function QuickActions({ items }: { items: { icon: IconName; label: string
     <View style={styles.qaPanel}>
       {items.map((a) => (
         <Pressable key={a.label} onPress={a.onPress} accessibilityRole="button" accessibilityLabel={a.label} style={({ pressed }) => [styles.qa, pressed && { opacity: 0.6 }]}>
-          <Icon name={a.icon} color={a.dim ? colors.muted : colors.lime} size={30} />
+          <Icon name={a.icon} color={a.dim ? colors.muted : colors.accentSoft} size={30} />
           <Text style={[styles.qaLabel, a.dim && { color: colors.muted }]} numberOfLines={1}>
             {a.label}
           </Text>
@@ -52,7 +52,7 @@ export function PromoCarousel({ promos }: { promos: HomeFeed['promotions'] }) {
       {promos.length > 1 && (
         <View style={styles.dots}>
           {promos.map((p, i) => (
-            <View key={p.id} style={[styles.dot, i === page && { backgroundColor: colors.lime, width: 18 }]} />
+            <View key={p.id} style={[styles.dot, i === page && { backgroundColor: colors.accentSoft, width: 18 }]} />
           ))}
         </View>
       )}
@@ -74,7 +74,7 @@ export function MonthlyBestCard({ item }: { item: HomeFeed['venues'][number] }) 
         <Text style={styles.boardTitle}>{venue.name.toUpperCase()}</Text>
       </View>
       <View style={styles.boardBody}>
-        <TrackMap path={track.mapPath} color={colors.lime} size={104} />
+        <TrackMap path={track.mapPath} color={colors.accentSoft} size={104} />
         <View style={{ flex: 1, gap: 8 }}>
           <Text style={styles.monthly}>MONTHLY BEST</Text>
           {monthlyTop3.length === 0 && <Text style={styles.empty}>No final laps yet this month</Text>}

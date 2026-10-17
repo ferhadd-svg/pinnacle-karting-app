@@ -16,7 +16,7 @@ export default function Receipts() {
         <Card key={o.id}>
           <View style={styles.row}>
             <Text style={styles.title}>{o.venueName}</Text>
-            <Text style={[styles.status, { color: o.status === 'paid' ? colors.you : colors.amber }]}>{o.status.toUpperCase()}</Text>
+            <Text style={[styles.status, { color: o.status === 'paid' ? colors.success : colors.amber }]}>{o.status.toUpperCase()}</Text>
           </View>
           <Muted>
             {formatDateTime(o.paidAt ?? o.createdAt)} · Ref {o.id.slice(0, 8).toUpperCase()}

@@ -138,7 +138,7 @@ export function BoardsPanel({ refreshKey, trackId: fixedTrack }: { refreshKey: n
 const styles = StyleSheet.create({
   list: { borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border, minHeight: 56 },
-  mine: { backgroundColor: 'rgba(25,210,122,0.12)' },
+  mine: { backgroundColor: colors.mine },
   pos: { width: 28, color: colors.text, fontWeight: '800', fontSize: 16, textAlign: 'center' },
   name: { color: colors.text, fontSize: 15, fontWeight: '600' },
   sub: { color: colors.muted, fontSize: 12 },

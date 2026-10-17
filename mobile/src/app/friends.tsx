@@ -64,7 +64,7 @@ export default function Friends() {
             <Button title="Add" onPress={add} disabled={code.trim().length < 6} loading={busy} />
           </View>
         </View>
-        {msg && <Text style={{ color: msg.ok ? colors.you : colors.danger }}>{msg.text}</Text>}
+        {msg && <Text style={{ color: msg.ok ? colors.success : colors.danger }}>{msg.text}</Text>}
       </Card>
       {friends.error && <ErrorBox message={friends.error} onRetry={() => friends.reload()} />}
       {friends.loading && <Loading />}

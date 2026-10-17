@@ -96,7 +96,7 @@ export function Stat({ label, value, hint, highlight }: { label: string; value: 
 }
 
 const badgeColor: Record<ResultStatus, string> = {
-  live: colors.you,
+  live: colors.success,
   provisional: colors.amber,
   final: colors.text,
   not_started: colors.muted,
@@ -227,7 +227,7 @@ export const styles = StyleSheet.create({
   statHint: { color: colors.muted, fontSize: 11 },
   badge: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start' },
   badgeText: { fontSize: 12, fontWeight: '700' },
-  liveDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.you },
+  liveDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.success },
   note: { borderWidth: 1, borderRadius: 12, padding: space.md, backgroundColor: colors.surface },
   noteText: { color: colors.text, fontSize: 13, lineHeight: 19 },
   button: { minHeight: 48, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', paddingHorizontal: space.xl, borderWidth: 1 },
